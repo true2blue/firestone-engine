@@ -73,6 +73,9 @@ for no module ptvsd error
 for no module distutils error(modify the hook in pyinstaller):
     https://github.com/pyinstaller/pyinstaller/issues/4064
 
+    if distutils_dir.endswith('__init__.py'):
+            distutils_dir = os.path.dirname(distutils_dir)
+
 for dynamic load strategies, i.e. Base.py, Basic.py need to import into Real.py
 
 
@@ -84,3 +87,13 @@ information on PyScaffold see https://pyscaffold.org/.
 
 For install vs develop:
 http://www.siafoo.net/article/77#install-vs-develop
+
+Edit trading.py and add the following
+=====================================
+
+def get_realtime_quotes(symbols=None, proxyManager=None):
+
+if(proxyManager is not None):
+        proxy = proxyManager.get_proxy()
+        if(proxy is not None):
+            request.set_proxy(proxy, 'http')

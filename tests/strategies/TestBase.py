@@ -21,7 +21,7 @@ class TestBase(object):
             'tradeId' : '5da1800e87b64fb6f4c32503',
             'configId' : '5db796e4429e4baab72826a0',
             'data_col' : '000793-2019-10-28',
-            'index_col' : '000001-2019-10-28'
+            'index_col' : 'sh-2019-10-28'
         }    
 
 
@@ -38,6 +38,7 @@ class TestBase(object):
                 self.runAssert()
                 return
             i += 1
+        self.runAssert()
 
 
     def runAssert(self):

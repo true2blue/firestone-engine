@@ -13,7 +13,7 @@ class Trader(object):
 
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, tradeId, is_mock, ignore_trade, date ,hours=['9','11','10,13-14'], minutes=['30-59','0-29','*']):
+    def __init__(self, tradeId, is_mock, ignore_trade, date ,hours=['9','11','10,13-14'], minutes=['30-59','0-29','*'], seconds='*/4'):
         self.hours = hours
         self.minutes = minutes
         self.tradeId = tradeId
@@ -21,9 +21,9 @@ class Trader(object):
         self.is_finsih_flag = False
         self.scheduler = BackgroundScheduler()
         end_date = datetime.now() + timedelta(days = 1)
-        self.end_date = '{}-{}-{}'.format(end_date.year,end_date.month,end_date.day)
+        self.end_date = '{}-{}-{}'.format(end_date.year,('0' + str(end_date.month))[-2:],('0' + str(end_date.day))[-2:])
         for i, hour in enumerate(hours):
-            trigger = CronTrigger(hour=hour,minute=minutes[i],second='*/4', end_date=self.end_date)
+            trigger = CronTrigger(hour=hour,minute=minutes[i],second=seconds, end_date=self.end_date)
             if(i == len(hours) - 1):
                 self.scheduler.add_job(self.run,id="last_job", trigger=trigger)
             else:    
@@ -49,7 +49,7 @@ class Trader(object):
             if(result['state'] == Constants.STATE[2] and 'htbh' in result):
                 htbh = result['htbh']
                 for i, hour in enumerate(self.hours):
-                    trigger = CronTrigger(hour=hour,minute=self.minutes[i],second='*/10', end_date=self.end_date)
+                    trigger = CronTrigger(hour=hour,minute=self.minutes[i],second='*/30', end_date=self.end_date)
                     self.scheduler.add_job(self.check_chengjiao,kwargs={'htbh' : htbh}, trigger=trigger)
             #done
             elif (result['state'] == Constants.STATE[4]):

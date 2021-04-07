@@ -16,7 +16,7 @@ Note: This skeleton file can be safely removed if not needed!
 """
 
 import os
-import ptvsd
+# import ptvsd
 import argparse
 import sys
 import time
@@ -31,9 +31,8 @@ __copyright__ = "aqua"
 __license__ = "mit"
 
 _logger = logging.getLogger(__name__)
-_handler = TimedRotatingFileHandler('logs/firerock.log', when='D', interval=1, backupCount=10 ,encoding='UTF-8')
 
-def calculate(tradeId, is_mock, ignore_trade, date, hours, minutes):
+def calculate(tradeId, is_mock, ignore_trade, date, hours, minutes, seconds):
     """execute the trade
 
     Args:
@@ -42,10 +41,12 @@ def calculate(tradeId, is_mock, ignore_trade, date, hours, minutes):
     Returns:
       trade result
     """
+    if(seconds is None):
+        seconds = '*/4'
     if(hours is None):
-        trader = Trader(tradeId, is_mock, ignore_trade, date)
+        trader = Trader(tradeId, is_mock, ignore_trade, date, seconds=seconds)
     else:    
-        trader = Trader(tradeId, is_mock, ignore_trade, date, hours=hours, minutes=minutes)
+        trader = Trader(tradeId, is_mock, ignore_trade, date, hours=hours, minutes=minutes, seconds=seconds)
     trader.start()
     try:
         while(not trader.is_finsih()):
@@ -129,17 +130,23 @@ def parse_args(args):
         help="i.e. 30-59 0-29 *",
         nargs='+',
         metavar="minute")
+    parser.add_argument(
+        "--seconds",
+        dest="seconds",
+        help="i.e. */4",
+        metavar="second")
     return parser.parse_args(args)
 
 
-def setup_logging(loglevel):
+def setup_logging(tradeId, loglevel):
     """Setup basic logging
 
     Args:
       loglevel (int): minimum loglevel for emitting messages
     """
     logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(level=loglevel, format=logformat, datefmt="%Y-%m-%d %H:%M:%S", handlers=[_handler])
+    handler = TimedRotatingFileHandler(f'logs/firerock-{tradeId}.log', when='D', interval=1, backupCount=10 ,encoding='UTF-8')
+    logging.basicConfig(level=loglevel, format=logformat, datefmt="%Y-%m-%d %H:%M:%S", handlers=[handler])
 
 
 def main(args):
@@ -149,17 +156,17 @@ def main(args):
       args ([str]): command line parameter list
     """
     args = parse_args(args)
-    if(args.debug):
-        # 5678 is the default attach port in the VS Code debug configurations
-        print("start debug on port 5678")
-        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-        ptvsd.wait_for_attach()
+    # if(args.debug):
+    #     # 5678 is the default attach port in the VS Code debug configurations
+    #     print("start debug on port 5678")
+    #     ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    #     ptvsd.wait_for_attach()
     if(args.test):
         os.environ['FR_DB'] = 'firestone-test'
     else:
         os.environ['FR_DB'] = 'firestone'        
-    setup_logging(args.loglevel)
-    calculate(args.tradeId, args.mock, args.ignore_trade, args.date, args.hours, args.minutes)
+    setup_logging(args.tradeId, args.loglevel)
+    calculate(args.tradeId, args.mock, args.ignore_trade, args.date, args.hours, args.minutes, args.seconds)
 
 
 def run():

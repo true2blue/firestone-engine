@@ -1,4 +1,5 @@
 import unittest
+import time
 from firestone_engine.Mock import Mock
 from firestone_engine.strategies.Basic import Basic
 
@@ -54,12 +55,27 @@ class TestMock(unittest.TestCase):
         self.assertEqual(self.mock.trade['order']['result']['data']['htbh'], '1249578371')
 
 
+    def testUpdateConfig(self):
+        self.mock.updateConfig({ '$inc': { 'curBuyNum': 1 } })
+        self.mock.load_trade_config()
+        self.assertEqual(self.mock.config['curBuyNum'], 1)
+
+
 
     # def testCreateOrder(self):
     #     result = self.mock.createDelegate('000793', 2.74, 100, 'buy')
     #     self.assertEqual(result['state'], '已提交')
     #     print(result['result'])
     #     result = self.mock.createDelegate('000793', 3.34, 100, 'sell')
+    #     self.assertEqual(result['state'], '已提交')
+    #     print(result['result'])
+
+    # def testCreateOrder1(self):
+    #     for i in range(0, 12):
+    #         result = self.mock.queryChenjiao('heart_beat')
+    #         print(result)
+    #         time.sleep(600)
+    #     result = self.mock.createDelegate('300017', 8.96, 100, 'buy')
     #     self.assertEqual(result['state'], '已提交')
     #     print(result['result'])
 
@@ -74,6 +90,11 @@ class TestMock(unittest.TestCase):
     #     result = self.mock.cancelDelegate('1253762489', '20191101')
     #     self.assertEqual(result['state'],'暂停')
     #     print(result['result'])
+
+    # def testRelogin(self):
+    #     result = self.mock.reLogin()
+    #     self.assertEqual(len(result),0)
+    #     print(result)
 
 
     def tearDown(self):

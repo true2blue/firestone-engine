@@ -15,7 +15,7 @@ also be used as template for Python modules.
 Note: This skeleton file can be safely removed if not needed!
 """
 
-import ptvsd
+# import ptvsd
 import argparse
 import sys
 import os
@@ -118,7 +118,7 @@ def parse_args(args):
         "-m",
         "--mock",
         dest="mock",
-        help="load mock data internal, i.e. load data from  000993-2019-10-30 to 000993-2019-10-30-m, most use with --date to assign history source data",
+        help="load mock data internal, use with -t to do the test, i.e. load data from  000993-2019-10-30 to 000993-2019-10-30-m, most use with --date to assign history source data",
         action="store_true")
     parser.add_argument(
         "--md",
@@ -149,11 +149,11 @@ def main(args):
       args ([str]): command line parameter list
     """
     args = parse_args(args)
-    if(args.debug):
-        # 5678 is the default attach port in the VS Code debug configurations
-        print("start debug on port 5678")
-        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-        ptvsd.wait_for_attach()
+    # if(args.debug):
+    #     # 5678 is the default attach port in the VS Code debug configurations
+    #     print("start debug on port 5678")
+    #     ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    #     ptvsd.wait_for_attach()
     if(args.test):
         os.environ['FR_DB'] = 'firestone-test'
     else:

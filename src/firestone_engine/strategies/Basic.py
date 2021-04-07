@@ -15,26 +15,23 @@ class Basic(Base):
 
 
     def match_index(self):
-        price = float(self.indexLastRow['price'])
-        pre_close = float(self.indexLastRow['pre_close'])
-        percent = Utils.round_dec((price - pre_close) / pre_close * 100)
+        percent = self.get_current_index_percent()
         percent_low = Decimal(self.trade['params']['index_percent']['low'])
         percent_high = Decimal(self.trade['params']['index_percent']['high'])
         percent_high = 10.1 if percent_high >= 10.0 else percent_high
         flag = (percent >= percent_low and percent <= percent_high)
         if(flag):
-            Base._logger.info('real_time = {}, tradeId = {} match index, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.indexLastRow['time'], percent, percent_low, percent_high))
+            Basic._logger.info('real_time = {}, tradeId = {} match index, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.indexLastRow['time'], percent, percent_low, percent_high))
         return flag
 
 
     def match_data(self):
-        price = float(self.dataLastRow['price'])
-        pre_close = float(self.dataLastRow['pre_close'])
-        percent = Utils.round_dec((price - pre_close) / pre_close * 100)
+        percent = self.get_current_data_percent()
         percent_low = Decimal(self.trade['params']['percent']['low'])
         percent_high = Decimal(self.trade['params']['percent']['high'])
         percent_high = 10.1 if percent_high >= 10.0 else percent_high
         flag = (percent >= percent_low and percent <= percent_high)
         if(flag):
-            Base._logger.info('real_time = {}, tradeId = {} match data, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.dataLastRow['time'], percent, percent_low, percent_high))
+            Basic._logger.info('real_time = {}, tradeId = {} match data, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.dataLastRow['time'], percent, percent_low, percent_high))
         return flag
+
