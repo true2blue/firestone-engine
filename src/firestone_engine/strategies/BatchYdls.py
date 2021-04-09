@@ -40,23 +40,26 @@ class BatchYdls(object):
         if(max_percent < float(self.trade['params']['max_stock_percent'])):
             return False
         for code, data in self.data.items():
-            open_percent = self.get_percent_by_price(float(data[-1]['open']), data[-1])
-            if(open_percent < Decimal(self.trade['params']['open_percent_low']) or open_percent > Decimal(self.trade['params']['open_percent_high'])):
-                continue
-            if(code.startswith('3')):
-                index = self.index[Constants.INDEX[5]]
-            else:
-                index = self.index[Constants.INDEX[0]]
-            trade = {
-                '_id' : self.trade['_id'],
-                'code' : code,
-                'params' : self.strategyMeta['parameters']
-            }
-            trade['params']['volume'] = self.trade['params']['volume']
-            if(self.ydls.run(trade, self.config, data, index)):
-                self.match_data = data
-                BatchYdls._logger.info(f'code = {code} matched in trade = {self.trade["_id"]}')
-                return True
+            try:
+                open_percent = self.get_percent_by_price(float(data[-1]['open']), data[-1])
+                if(open_percent < Decimal(self.trade['params']['open_percent_low']) or open_percent > Decimal(self.trade['params']['open_percent_high'])):
+                    continue
+                if(code.startswith('3')):
+                    index = self.index[Constants.INDEX[5]]
+                else:
+                    index = self.index[Constants.INDEX[0]]
+                trade = {
+                    '_id' : self.trade['_id'],
+                    'code' : code,
+                    'params' : self.strategyMeta['parameters']
+                }
+                trade['params']['volume'] = self.trade['params']['volume']
+                if(self.ydls.run(trade, self.config, data, index)):
+                    self.match_data = data
+                    BatchYdls._logger.info(f'code = {code} matched in trade = {self.trade["_id"]}')
+                    return True
+            except Exception as e:
+                BatchYdls._logger.error(f'code = {code} run failed in trade = {self.trade["_id"]}, error = {e}')
         return False
 
 
