@@ -29,7 +29,8 @@ class Real(object):
         self.lastRunTime = None
         self.client = MongoClient(Real._MONFO_URL, 27017)
         self.db = self.client[os.environ['FR_DB']]
-        self.data_db = self.client[Real._DATA_DB]
+        self.data_client = MongoClient(Real._MONFO_URL, 27018)
+        self.data_db = self.data_client[Real._DATA_DB]
         self.init_cols()
         self.init_Config()
 

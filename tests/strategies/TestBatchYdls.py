@@ -8,7 +8,8 @@ class TestBatchYdls(unittest.TestCase):
     def setUp(self):
         self.client = MongoClient('127.0.0.1', 27017)
         self.db = self.client['firestone-test']
-        self.db_data = self.client['firestone-data']
+        self.data_client = MongoClient('127.0.0.1', 27018)
+        self.db_data = self.data_client['firestone-data']
         self.trade = self.db['mocktrades'].find_one({"_id" : ObjectId('5db7e0a555609bb27252edb8')})
         self.config = self.db['configmocks'].find_one({"_id" : ObjectId('5db796e4429e4baab72826a0')})
         self.is_mock = True

@@ -9,7 +9,8 @@ class TestBase(object):
         self.test_config = self.get_test_config()
         self.client = MongoClient('127.0.0.1', 27017)
         self.DB = self.client['firestone-test']
-        self.DB_DATA = self.client['firestone-data']
+        self.data_client = MongoClient('127.0.0.1', 27018)
+        self.DB_DATA = self.data_client['firestone-data']
         self.trade = self.DB['mocktrades'].find_one({"_id" : ObjectId(self.test_config['tradeId'])})
         self.config = self.DB['configmocks'].find_one({"_id" : ObjectId(self.test_config['configId'])})
         self.data = list(self.DB_DATA[self.test_config['data_col']].find())

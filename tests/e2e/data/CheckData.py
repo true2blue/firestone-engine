@@ -5,7 +5,7 @@ import unittest
 class CheckData(unittest.TestCase):
 
     def setUp(self):
-        self.client = MongoClient('127.0.0.1', 27017)
+        self.client = MongoClient('127.0.0.1', 27018)
         self.db = self.client['firestone-data']
 
     def testData(self):
