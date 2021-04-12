@@ -84,7 +84,7 @@ class Real(object):
     def load_trade_config(self):
         self.load_trade()
         self.config = self.db[self.cols['configs']].find_one({"userId" : self.trade['userId']})  
-        Real._logger.info('tradeId = {} load trade = {}, config = {}'.format(self.tradeId, self.trade, self.config))  
+        # Real._logger.info('tradeId = {} load trade = {}, config = {}'.format(self.tradeId, self.trade, self.config))  
 
 
     def load_data(self):
