@@ -10,6 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from .ProxyManager import ProxyManager
 from .Constants import Constants
 from .HotConcept import HotConcept
+import asyncio
 
 class DataLoader(object):
 
@@ -117,23 +118,25 @@ class DataLoader(object):
     def load_data(self):
         list_wrapper = []
         size = len(self.code_list)
-        df_result = None
         if(size > 50):
             list_size = (size // 50) + (1 if (size % 50) > 0 else 0)
             for i in range(list_size):
                 list_wrapper.append(self.code_list[i * 50 : i * 50 + 50])
         else:
             list_wrapper.append(self.code_list)
+        loop = asyncio.get_event_loop()
+        tasks = []
         if(self.use_proxy):
             for l in list_wrapper:
-                self.get_real_time_data(l, proxyManager=self.proxyManager)
+                tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))               
         else:
             for i, l in enumerate(list_wrapper):
                 if(i == 0):
-                    self.get_real_time_data(l)
+                    tasks.append(asyncio.async(self.get_real_time_data(l)))
                 else:
-                    self.get_real_time_data(l, proxyManager=self.proxyManager)
-        return df_result
+                    tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))
+        loop.run_until_complete(asyncio.wait(tasks))
+        loop.close()
         
 
     async def get_real_time_data(self, l, proxyManager=None):
