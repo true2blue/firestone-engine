@@ -126,34 +126,37 @@ class DataLoader(object):
             list_wrapper.append(self.code_list)
         if(self.use_proxy):
             for l in list_wrapper:
-                try:
-                    df = tushare.get_realtime_quotes(l, proxyManager=self.proxyManager)
-                    if(df_result is None):
-                        df_result = df
-                    else:
-                        df_result = df_result.append(df)
-                except Exception as e:
-                    DataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
-                    self.use_proxy = True
-                    self.proxyManager.remove_proxy()
+                self.get_real_time_data(l, proxyManager=self.proxyManager)
         else:
             for i, l in enumerate(list_wrapper):
-                try:
-                    if(i == 0):
-                        df = tushare.get_realtime_quotes(l)
-                    else:
-                        df = tushare.get_realtime_quotes(l, proxyManager=self.proxyManager)
-                    if(df_result is None):
-                        df_result = df
-                    else:
-                        df_result = df_result.append(df)    
-                except Exception as e:
-                    DataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
-                    self.use_proxy = True
-                    self.proxyManager.remove_proxy()
+                if(i == 0):
+                    self.get_real_time_data(l)
+                else:
+                    self.get_real_time_data(l, proxyManager=self.proxyManager)
         return df_result
         
 
+    async def get_real_time_data(self, l, proxyManager=None):
+        try:
+            df = await tushare.get_realtime_quotes(l, proxyManager=proxyManager)
+            if(df is None):
+                DataLoader._logger.error('failed to get the data for {}'.format(l))
+                return
+            json_list = json.loads(df.to_json(orient='records'))
+            DataLoader._logger.info('get data length = {}'.format(len(json_list)))
+            for json_data in json_list:
+                code = json_data['code']
+                code = Constants.map_code(json_data['name'], json_data['code'])
+                if(code not in self.lastRows):
+                    self.lastRows[code] = None
+                if(self.lastRows[code] is None or self.lastRows[code]['time'] != json_data['time']):    
+                    json_data['real_time'] = datetime.now()
+                    self.data_db[code + '-' + self.today].insert(json_data)
+                    self.lastRows[code] = json_data
+        except Exception as e:
+                DataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
+                self.use_proxy = True
+                self.proxyManager.remove_proxy()
 
 
     def run(self):
@@ -166,21 +169,7 @@ class DataLoader(object):
             if(self.is_mock):
                 self.run_mock()
             else:
-                df = self.load_data()
-                if(df is None):
-                    DataLoader._logger.error('failed to get the data for {}'.format(self.code_list))
-                    return      
-                json_list = json.loads(df.to_json(orient='records'))
-                DataLoader._logger.info('get data length = {}'.format(len(json_list)))
-                for json_data in json_list:
-                    code = json_data['code']
-                    code = Constants.map_code(json_data['name'], json_data['code'])
-                    if(code not in self.lastRows):
-                        self.lastRows[code] = None
-                    if(self.lastRows[code] is None or self.lastRows[code]['time'] != json_data['time']):    
-                        json_data['real_time'] = datetime.now()
-                        self.data_db[code + '-' + self.today].insert(json_data)
-                        self.lastRows[code] = json_data
+                self.load_data()
         except Exception as e:
             DataLoader._logger.error(e)
 
