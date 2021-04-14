@@ -97,3 +97,5 @@ if(proxyManager is not None):
         proxy = proxyManager.get_proxy()
         if(proxy is not None):
             request.set_proxy(proxy, 'http')
+
+replace the file in Python36\Lib\site-packages\tushare\stock with lib/trading.py
