@@ -124,7 +124,8 @@ class DataLoader(object):
                 list_wrapper.append(self.code_list[i * 50 : i * 50 + 50])
         else:
             list_wrapper.append(self.code_list)
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         tasks = []
         if(self.use_proxy):
             for l in list_wrapper:
