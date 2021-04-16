@@ -43,7 +43,7 @@ class ProxyManager(object):
             if(self.get_pool_size() == 0):
                 return None
         self.proxy = self.proxy_pool.pop(0)
-        return "{}:{}".format(self.proxy['ip'], self.proxy['port'])
+        return "http://{}:{}".format(self.proxy['ip'], self.proxy['port'])
 
 
     def remove_proxy(self):
