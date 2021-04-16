@@ -21,7 +21,7 @@ class Basic(Base):
         percent_high = 10.1 if percent_high >= 10.0 else percent_high
         flag = (percent >= percent_low and percent <= percent_high)
         if(flag):
-            Basic._logger.info('real_time = {}, tradeId = {} match index, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.indexLastRow['time'], percent, percent_low, percent_high))
+            Basic._logger.info('real_time = {}, tradeId = {}, code = {}, match index, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.indexLastRow['code'], self.indexLastRow['time'], percent, percent_low, percent_high))
         return flag
 
 
@@ -32,6 +32,6 @@ class Basic(Base):
         percent_high = 10.1 if percent_high >= 10.0 else percent_high
         flag = (percent >= percent_low and percent <= percent_high)
         if(flag):
-            Basic._logger.info('real_time = {}, tradeId = {} match data, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.dataLastRow['time'], percent, percent_low, percent_high))
+            Basic._logger.info('real_time = {}, tradeId = {}, code = {}, match data, time = {}, percent = {}, low = {}, high = {}'.format(datetime.now(), self.trade['_id'], self.dataLastRow['code'], self.dataLastRow['time'], percent, percent_low, percent_high))
         return flag
 

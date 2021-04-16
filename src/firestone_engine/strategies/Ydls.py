@@ -32,7 +32,7 @@ class Ydls(Basic):
         break_top = Utils.round_dec((high - price) / (pre_close) * 100)
         if(break_top > Decimal(self.trade['params']['speed']['break_top'])):
             self.force_stop = True
-            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Ydls break_top = {break_top}, force stop')
+            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls break_top = {break_top}, force stop')
             return False
         upper_shadow = Utils.round_dec((high - price) / (high - low))
         if(upper_shadow > Decimal(self.trade['params']['speed']['upper_shadow'])):
@@ -43,7 +43,7 @@ class Ydls(Basic):
         else:
             flag = stock_percent > Decimal(self.trade['params']['speed']['ratio_r']) * index_percent
         if(flag):
-            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Ydls matched shape upper_shadow = {upper_shadow}, stock_percent = {stock_percent}')
+            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls matched shape upper_shadow = {upper_shadow}, stock_percent = {stock_percent}')
         return flag
 
 
@@ -60,7 +60,7 @@ class Ydls(Basic):
         percent = Utils.round_dec((price - pre_price) / (pre_close) * 100)
         flag = percent >= Decimal(self.trade['params']['speed']['percent'])
         if(flag):
-            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Ydls matched speed percnet = {percent}')
+            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls matched speed percnet = {percent}')
         return flag
 
 
@@ -82,5 +82,5 @@ class Ydls(Basic):
             index += 1
         flag = buy_amount >= amount
         if(flag):
-            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Ydls matched money buy_amount = {buy_amount}')
+            Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls matched money buy_amount = {buy_amount}')
         return flag
