@@ -381,7 +381,7 @@ async def get_realtime_quotes(symbols=None, proxyManager=None):
     if(proxyManager is not None):
         proxy = proxyManager.get_proxy()
     try:
-        async with aiohttp.ClientSession(timeout=10) as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
             async with session.get(ct.LIVE_DATA_URL%(ct.P_TYPE['http'], ct.DOMAINS['sinahq'], _random(), symbols_list),proxy=proxy) as response:
                 text = await response.read()
                 text = text.decode('GBK')
