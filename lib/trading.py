@@ -8,6 +8,7 @@ Created on 2014/07/31
 """
 from __future__ import division
 
+import logging
 import aiohttp
 import time
 import json
@@ -379,29 +380,35 @@ async def get_realtime_quotes(symbols=None, proxyManager=None):
     proxy = None
     if(proxyManager is not None):
         proxy = proxyManager.get_proxy()
-    async with aiohttp.ClientSession(timeout=10) as session:
-        async with session.get(ct.LIVE_DATA_URL%(ct.P_TYPE['http'], ct.DOMAINS['sinahq'], _random(), symbols_list),proxy=proxy) as response:
-            text = await response.read()
-            text = text.decode('GBK')
-            reg = re.compile(r'\="(.*?)\";')
-            data = reg.findall(text)
-            regSym = re.compile(r'(?:sh|sz)(.*?)\=')
-            syms = regSym.findall(text)
-            data_list = []
-            syms_list = []
-            for index, row in enumerate(data):
-                if len(row)>1:
-                    data_list.append([astr for astr in row.split(',')[:33]])
-                    syms_list.append(syms[index])
-            if len(syms_list) == 0:
-                return None
-            df = pd.DataFrame(data_list, columns=ct.LIVE_DATA_COLS)
-            df = df.drop('s', axis=1)
-            df['code'] = syms_list
-            ls = [cls for cls in df.columns if '_v' in cls]
-            for txt in ls:
-                df[txt] = df[txt].map(lambda x : x[:-2])
-            return df
+    try:
+        async with aiohttp.ClientSession(timeout=10) as session:
+            async with session.get(ct.LIVE_DATA_URL%(ct.P_TYPE['http'], ct.DOMAINS['sinahq'], _random(), symbols_list),proxy=proxy) as response:
+                text = await response.read()
+                text = text.decode('GBK')
+                reg = re.compile(r'\="(.*?)\";')
+                data = reg.findall(text)
+                regSym = re.compile(r'(?:sh|sz)(.*?)\=')
+                syms = regSym.findall(text)
+                data_list = []
+                syms_list = []
+                for index, row in enumerate(data):
+                    if len(row)>1:
+                        data_list.append([astr for astr in row.split(',')[:33]])
+                        syms_list.append(syms[index])
+                if len(syms_list) == 0:
+                    return None
+                df = pd.DataFrame(data_list, columns=ct.LIVE_DATA_COLS)
+                df = df.drop('s', axis=1)
+                df['code'] = syms_list
+                ls = [cls for cls in df.columns if '_v' in cls]
+                for txt in ls:
+                    df[txt] = df[txt].map(lambda x : x[:-2])
+                return df
+    except Exception as e:
+        if proxy is not None:
+            logging.getLogger(__name__).error(f'failed to get data symbols = {symbols} with proxy = {proxy} e = {e}')
+            proxyManager.remove_proxy(proxy)
+        raise e
 
 
 def get_h_data(code, start=None, end=None, autype='qfq',

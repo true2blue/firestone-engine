@@ -160,8 +160,6 @@ class DataLoader(object):
         except Exception as e:
                 DataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
                 self.use_proxy = True
-                self.proxyManager.remove_proxy()
-
 
     def run(self):
         try:

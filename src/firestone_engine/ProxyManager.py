@@ -13,7 +13,7 @@ class ProxyManager(object):
     def __init__(self):
         self.proxy_pool = []
         self.load_proxy_failed = 0
-        self.proxy = None
+        self.i = 0
 
     def load_proxies(self, number=5):
         try:
@@ -21,7 +21,8 @@ class ProxyManager(object):
             ProxyManager._logger.info('load proxies, retry = {} get response = {}'.format(self.load_proxy_failed, response.text))
             result = json.loads(response.text)
             if(result['code'] == 0):
-                self.proxy_pool.extend(result['data'])
+                for data in result['data']:
+                    self.proxy_pool.append(f'http://{data["ip"]}:{data["port"]}')
             else:
                 ProxyManager._logger.error('get proxy failed code = {}'.format(result['code']))
                 self.load_proxy_failed += 1
@@ -35,16 +36,17 @@ class ProxyManager(object):
 
 
     def get_proxy(self):
-        if(self.proxy is not None):
-            self.proxy_pool.append(self.proxy)
         if(self.get_pool_size() == 0):
             if(self.load_proxy_failed < ProxyManager._LOAD_PROXY_RETRY):
                 self.load_proxies()
             if(self.get_pool_size() == 0):
                 return None
-        self.proxy = self.proxy_pool.pop(0)
-        return "http://{}:{}".format(self.proxy['ip'], self.proxy['port'])
+        if self.i >= self.get_pool_size():
+            self.i = 0
+        proxy = self.proxy_pool[self.i]
+        self.i = self.i + 1
+        return proxy
 
 
-    def remove_proxy(self):
-        self.proxy = None
+    def remove_proxy(self, proxy):
+        self.proxy_pool.remove(proxy)
