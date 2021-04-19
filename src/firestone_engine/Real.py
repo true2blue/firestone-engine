@@ -127,13 +127,13 @@ class Real(object):
                 cond_data = {"_id" : {"$gt" : self.data['data'][code][-1]["_id"]}} if len(self.data['data'][code]) > 0 else {}
                 data = self.data_db[code + '-' + self.date].find(cond_data).sort([("_id" , 1)])
                 self.data['data'][code].extend(data)
-                if(code.startswith('3') and Constants.INDEX[5] not in self.data['index']):
+                if code.startswith('3'):
                     if Constants.INDEX[5] not in self.data['index']:
                         self.data['index'][Constants.INDEX[5]] = []
                     cond_index = {"_id" : {"$gt" : self.data['index'][Constants.INDEX[5]][-1]["_id"]}} if len(self.data['index'][Constants.INDEX[5]]) > 0 else {}
                     index = self.data_db[Constants.INDEX[5] + '-' + self.date].find(cond_index).sort([("_id" , 1)])
                     self.data['index'][Constants.INDEX[5]].extend(index)
-                elif(Constants.INDEX[0] not in self.data['index']):
+                else:
                     if Constants.INDEX[0] not in self.data['index']:
                         self.data['index'][Constants.INDEX[0]] = []
                     cond_index = {"_id" : {"$gt" : self.data['index'][Constants.INDEX[0]][-1]["_id"]}} if len(self.data['index'][Constants.INDEX[0]]) > 0 else {}
