@@ -4,7 +4,7 @@ import json
 
 class ProxyManager(object):
 
-    _URL = 'http://http.tiqu.alicdns.com/getip3?num={}&type=2&pro=&city=0&yys=100017&port=1&time=4&ts=1&ys=1&cs=1&lb=1&sb=0&pb=4&mr=1&regions=&gm=4'
+    _URL = 'http://http.tiqu.alicdns.com/getip3?num={}&type=2&pro=&city=0&yys=100017&port=1&time=3&ts=1&ys=1&cs=1&lb=1&sb=0&pb=4&mr=1&regions=&gm=4'
 
     _LOAD_PROXY_RETRY = 10
     
