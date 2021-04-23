@@ -50,7 +50,7 @@ class DataLoader(object):
         self.load_codes_from_db = False
         self.code_list = self.get_code_list(code_list)
         for i, hour in enumerate(hours):
-            trigger = CronTrigger(hour=hour,minute=minutes[i],second='2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59', end_date=end_date)
+            trigger = CronTrigger(hour=hour,minute=minutes[i],second='1,4,7,10,13,16,19,22,25,28,31,34,37,40,43,46,49,52,55,58', end_date=end_date)
             # trigger_concept = CronTrigger(hour=hour,minute=minutes[i],second='0', end_date=end_date)
             if(i == len(hours) - 1):
                 self.scheduler.add_job(self.run,id="last_job",trigger=trigger)
