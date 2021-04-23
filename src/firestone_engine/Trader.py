@@ -13,7 +13,7 @@ class Trader(object):
 
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, tradeId, is_mock, ignore_trade, date ,hours=['9','11','10,13-14'], minutes=['30-59','0-29','*'], seconds='*/3'):
+    def __init__(self, tradeId, is_mock, ignore_trade, date ,hours=['9','11','10,13-14'], minutes=['30-59','0-29','*'], seconds='2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59'):
         self.hours = hours
         self.minutes = minutes
         self.tradeId = tradeId

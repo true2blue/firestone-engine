@@ -42,7 +42,7 @@ def calculate(tradeId, is_mock, ignore_trade, date, hours, minutes, seconds):
       trade result
     """
     if(seconds is None):
-        seconds = '*/3'
+        seconds = '2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59'
     if(hours is None):
         trader = Trader(tradeId, is_mock, ignore_trade, date, seconds=seconds)
     else:    
@@ -133,7 +133,7 @@ def parse_args(args):
     parser.add_argument(
         "--seconds",
         dest="seconds",
-        help="i.e. */3",
+        help="i.e. 2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59",
         metavar="second")
     return parser.parse_args(args)
 
