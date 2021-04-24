@@ -24,7 +24,7 @@ class DataLoader(object):
 
     _CODE_FROM_DB = '000000'
 
-    def __init__(self, code_list, is_mock=False, mock_trade=False, date=None, hours=['9','11','10,13-14'], minutes=['30-59','0-29','*']):
+    def __init__(self, code_list, is_mock=False, mock_trade=False, date=None, hours=['9','11','10,13-14'], minutes=['25-59','0-29','*']):
         self.proxyManager = ProxyManager()
         self.use_proxy = False
         self.hours = hours
@@ -153,8 +153,11 @@ class DataLoader(object):
                 code = Constants.map_code(json_data['name'], json_data['code'])
                 if(code not in self.lastRows):
                     self.lastRows[code] = None
-                if(self.lastRows[code] is None or self.lastRows[code]['time'] != json_data['time']):    
-                    json_data['real_time'] = datetime.now()
+                if(self.lastRows[code] is None or self.lastRows[code]['time'] != json_data['time']):
+                    data_dt = datetime.now()
+                    if data_dt.hour == 9 and data_dt.minute < 30:
+                        return
+                    json_data['real_time'] = data_dt
                     self.data_db[code + '-' + self.today].insert(json_data)
                     self.lastRows[code] = json_data
         except Exception as e:
