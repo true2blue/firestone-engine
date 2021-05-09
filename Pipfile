@@ -18,5 +18,7 @@ bs4 = "*"
 apscheduler = "*"
 pymongo = "*"
 aiohttp = "*"
+easytrader = "*"
+pypiwin32 = "*"
 [requires]
 python_version = "3.6"

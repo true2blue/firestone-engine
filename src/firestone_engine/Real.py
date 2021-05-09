@@ -11,6 +11,7 @@ from .strategies.Ydls import Ydls
 from .strategies.BasicSell import BasicSell
 from .strategies.ConceptPick import ConceptPick
 from .strategies.BatchYdls import BatchYdls
+import easytrader
 
 class Real(object):
 
@@ -39,7 +40,14 @@ class Real(object):
         self.cols = {
             'trades' : 'trades',
             'configs' : 'configs'
-        }    
+        }   
+        self.init_easy_trader()
+        
+    
+    def init_easy_trader(self):
+        self.user = easytrader.use('universal_client')
+        self.user.connect(r'C:/同花顺软件/同花顺/xiadan.exe')
+        self.user.enable_type_keys_for_editor() 
 
 
     def run(self):
@@ -186,7 +194,38 @@ class Real(object):
 
 
     def createDelegate(self, code, price, volume, op):
-        return {'result' : 'not allowed', 'state' : Constants.STATE[3]}
+        try:
+            if self.data_db['trade_lock'].find_one({}) is not None:
+                Real._logger.error('trade_lock is locked')
+                return {'state' : Constants.STATE[3], 'result' : '其他交易正在进行中'}
+            self.data_db['trade_lock'].insert({'lock' : 1})
+            result = None
+            if op == 'buy':
+                result = self.user.buy(code, price=price, amount=volume)
+            else:
+                result = self.user.sell(code, price=price, amount=volume)
+            if 'message' in result and result['message'] == 'success':
+                order = {
+                    'result' : {
+                        'data' : {
+                            'htbh' : f'{code}_{price}_{volume}_{op}',
+                            'code' : code,
+                            'price' : price,
+                            'volume' : volume,
+                            'op' : op
+                        }
+                    }
+                }
+                Real._logger.info('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order success'.format(self.tradeId, code, price, volume, op))
+                return {'state' : Constants.STATE[2], 'result' : '订单已提交，请在客户端查看', 'order' : order}
+            else:    
+                Real._logger.error('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, result))
+                return {'state' : Constants.STATE[3], 'result' : f'创建订单失败, {result}'}
+        except Exception as e:
+            Real._logger.error('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, e))
+            return {'state' : Constants.STATE[3], 'result' : '创建订单失败，发生异常'}
+        finally:
+            self.data_db['trade_lock'].remove()
 
 
     def cancelOrder(self):
@@ -221,7 +260,26 @@ class Real(object):
         
 
     def queryChenjiao(self, htbh):
-        return {'result' : 'not allowed', 'state' : Constants.STATE[3]}
+        try:
+            if self.data_db['trade_lock'].find_one({}) is not None:
+                Real._logger.error('trade_lock is locked')
+                return {}
+            self.data_db['trade_lock'].insert({'lock' : 1})
+            trades = self.user.today_trades
+            if trades is not None and len(trades) > 0:
+                bh = htbh.split('_')
+                op = '买入' if bh[3] == 'buy' else '卖出'
+                for trade in trades:
+                    if trade['证券代码'] == bh[0] and str(trade['成交数量']) == str(bh[2]) and trade['操作'] == op:
+                        Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
+                        message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
+                        return {'state' : Constants.STATE[4], 'result' : message, 'order' : trade}
+            return {}
+        except Exception as e:
+            Real._logger.error('tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
+            return {'state' : Constants.STATE[3], 'result' : '查询订单[{}]成交状况失败，请检查配置'.format(htbh)}
+        finally:
+            self.data_db['trade_lock'].remove()
 
 
     
