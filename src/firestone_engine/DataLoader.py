@@ -91,19 +91,19 @@ class DataLoader(object):
         self.scheduler.shutdown(wait=True)
         DataLoader._logger.info('job get data for {} is stop'.format(self.code_list))
 
-
-    def get_code_list_from_db(self):
-        colname = 'trades'
-        if(self.mock_trade):
-            colname = 'mocktrades'
-        codes_data = self.db[colname].find({"deleted":False, "params.executeDate" : self.today},{"code" : 1, "_id" : 0})
+    def get_code_list_from_db_inner(self, coll, temp_list):
+        codes_data = self.db[coll].find({"deleted":False, "params.executeDate" : self.today},{"code" : 1, "_id" : 0})
         code_list = [code_data["code"] for code_data in list(codes_data) if code_data["code"] != 'N/A']
-        temp_list = []
         for code in code_list:
             if(',' in code):
                 temp_list.extend(code.split(','))
             else:
                 temp_list.append(code)
+
+    def get_code_list_from_db(self):
+        temp_list = []
+        self.get_code_list_from_db_inner('trades', temp_list)
+        self.get_code_list_from_db_inner('mocktrades', temp_list)
         code_list = temp_list        
         for code in code_list:
             if(code.startswith('3')):
