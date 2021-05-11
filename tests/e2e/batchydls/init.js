@@ -4,6 +4,12 @@ db.users.insert({
    password: "e10adc3949ba59abbe56e057f20f883e",
    _id: ObjectId("5d905db9fc84d3224b0eb59c")
 });
+db.configs.insert({
+    "_id" : ObjectId("5db796e4429e4baab72826a0"),
+    "maxBuyNum" : 3,
+    "curBuyNum" : 0,
+    "userId" : ObjectId("5d905db9fc84d3224b0eb59c")
+});
 db.configmocks.insert({
     "_id" : ObjectId("5db796e4429e4baab72826a0"),
     "maxBuyNum" : 3,
@@ -72,6 +78,32 @@ db.strategies.insertMany([
             "open_percent_low" : "-1.0",
             "open_percent_high" : "3.5",
             "max_stock_percent" : "7.0",
+            "volume" : "1000"
+        }
+    }
+]);
+db.trades.insertMany([
+    {
+        "_id" : ObjectId("5db7e0a555609bb27252edb8"),
+        "code" : "300448,000993",
+        "state" : "运行中",
+        "result" : "无",
+        "userId" : ObjectId("5d905db9fc84d3224b0eb59c"),
+        "strategyId" : ObjectId("5da19b7d181fc3600c5544c6"),
+        "createDate" : ISODate("2020-04-10T00:00:00.000Z"),
+        "deleted" : false,
+        "params" : {
+            "code" : "300448,000993",
+            "executeDate" : "",
+            "monitorTime" : {
+                "start" : "00:00",
+                "end" : "23:59"
+            },
+            "desc" : "xxx",
+            "strategyId" : "5da19b7d181fc3600c5544c3",
+            "open_percent_low" : "-1.0",
+            "open_percent_high" : "3.5",
+            "max_stock_percent" : "-3.0",
             "volume" : "1000"
         }
     }
