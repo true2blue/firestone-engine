@@ -75,7 +75,10 @@ class Mock(Real):
                     for order in orders:
                         if(order['d_2135'] == htbh):
                             message = '以{}成交{}股,合同编号{}'.format(order['d_2129'], order['d_2128'], htbh)
-                            return {'state' : Constants.STATE[4], 'result' : message, 'order' : order}
+                            state = Constants.STATE[4]
+                            if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.is_buy:
+                                state = Constants.STATE[6]          
+                            return {'state' : state, 'result' : message, 'order' : order}
                 return {}
             return {'state' : Constants.STATE[3], 'result' : result['errormsg']}   
         except Exception as e:

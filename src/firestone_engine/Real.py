@@ -11,6 +11,7 @@ from .strategies.Ydls import Ydls
 from .strategies.BasicSell import BasicSell
 from .strategies.ConceptPick import ConceptPick
 from .strategies.BatchYdls import BatchYdls
+from .strategies.PPT0 import PPT0
 import easytrader
 
 class Real(object):
@@ -273,7 +274,10 @@ class Real(object):
                     if trade['证券代码'] == bh[0] and str(trade['成交数量']) == str(bh[2]) and trade['操作'] == op:
                         Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
                         message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
-                        return {'state' : Constants.STATE[4], 'result' : message, 'order' : trade}
+                        state = Constants.STATE[4]
+                        if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.is_buy:
+                            state = Constants.STATE[6]
+                        return {'state' : state, 'result' : message, 'order' : trade}
             return {}
         except Exception as e:
             Real._logger.error('tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
