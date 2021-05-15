@@ -12,16 +12,16 @@ class PPT0(Base):
     _MIN_TIME_PERIOD_LENGTH = 15
 
     def buildPP(self):
-        pre_high = Decimal(self.trade['params']['pre']['high'])
-        pre_low = Decimal(self.trade['params']['pre']['low'])
-        pre_close = Decimal(self.trade['params']['pre']['close'])
-        pp = Utils.round_dec((pre_high + pre_low + pre_close) / 3),
-        r1 = Utils.round_dec(2 * pp - pre_low)
-        r2 = Utils.round_dec(pp + pre_high - pre_low)
-        r3 = Utils.round_dec(pre_high + 2 * (pp - pre_low))
-        s1 = Utils.round_dec(2 * pp - pre_high)
-        s2 = Utils.round_dec(pp - pre_high + pre_low)
-        s3 = Utils.round_dec(pre_low - 2 * (pre_high - pp))
+        pre_high = self.trade['params']['pre']['high']
+        pre_low = self.trade['params']['pre']['low']
+        pre_close = self.trade['params']['pre']['close']
+        pp = (pre_high + pre_low + pre_close) / 3
+        r1 = 2 * pp - pre_low
+        r2 = pp + pre_high - pre_low
+        r3 = pre_high + 2 * (pp - pre_low)
+        s1 = 2 * pp - pre_high
+        s2 = pp - pre_high + pre_low
+        s3 = pre_low - 2 * (pre_high - pp)
         sm1 = (pp + s1) / 2
         sm2 = (s1 + s2) / 2
         sm3 = (s2 + s3) / 2
@@ -29,39 +29,48 @@ class PPT0(Base):
         rm2 = (r1 + r2) / 2
         rm3 = (r2 + r3) / 2
         self.pp = {
-            'r3' : r3,
-            'rm3' : rm3,
-            'r2' : r2,
-            'rm2' : rm2,
-            'r1' : r1,
-            'rm1' : rm1,
-            'pp' : pp,
-            'sm1' : sm1,
-            's1' : s1,
-            'sm2' : sm2,
-            's2' : s2,
-            'sm3' : sm3,
-            's3' : s3
+            'r3' : Utils.round_dec(r3),
+            'rm3' : Utils.round_dec(rm3),
+            'r2' : Utils.round_dec(r2),
+            'rm2' : Utils.round_dec(rm2),
+            'r1' : Utils.round_dec(r1),
+            'rm1' : Utils.round_dec(rm1),
+            'pp' : Utils.round_dec(pp),
+            'sm1' : Utils.round_dec(sm1),
+            's1' : Utils.round_dec(s1),
+            'sm2' : Utils.round_dec(sm2),
+            's2' : Utils.round_dec(s2),
+            'sm3' : Utils.round_dec(sm3),
+            's3' : Utils.round_dec(s3)
         }
 
     def matchCondition(self):
         self.buildPP()
-        if self.trade['state'] == Constants.STATE[6]:
+        if self.trade['state'] == Constants.STATE[0]:
             return self.match_buy_condition()
-        return self.match_sell_condition()
+        elif self.trade['state'] == Constants.STATE[6]:
+            return self.match_sell_condition()
+        return False
 
 
     def match_sell_condition(self):
-        if Decimal(self.dataLastRow['high']) == Decimal(self.dataLastRow['close']):
-            return False
+        close = float(self.dataLastRow['price'])
+        if(not hasattr(self, 'high')):
+            self.high = close
+        elif close > self.high:
+            self.high = close
         stop_win = self.get_current_data_percent() - self.get_percent_by_price(self.buy_price, self.dataLastRow)
         if stop_win > Decimal(self.trade['params']['stop_win']):
             PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched stop_win {stop_win}')
-            drop_from_high = self.get_percent_by_price(self.dataLastRow['high'], self.dataLastRow) - self.get_current_data_percent()
+            drop_from_high = self.get_percent_by_price(self.high, self.dataLastRow) - self.get_current_data_percent()
             if drop_from_high > Decimal(self.trade['params']['drop_from_high']):
                 PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched drop_from_high {drop_from_high}')
                 self.is_buy = False
                 return True
+        if self.dataLastRow["time"] > self.trade['params']['force_sell_time']:
+            PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched force_sell_time {self.dataLastRow["time"]}')
+            return True    
+        return False
         
 
     def match_buy_condition(self):
@@ -70,11 +79,11 @@ class PPT0(Base):
     
     def match_shape(self):
         items = list(self.pp.items())[5:]
-        open_p = Decimal(self.dataLastRow['open'])
-        close = Decimal(self.dataLastRow['close'])
-        low = Decimal(self.dataLastRow['low'])
+        open_p = float(self.dataLastRow['open'])
+        close = float(self.dataLastRow['price'])
+        low = float(self.dataLastRow['low'])
         if close == low:
-            self.low_time = datetime.strptime(f'{self.dataLastRow["date"]}{self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
+            self.low_time = datetime.strptime(f'{self.dataLastRow["date"]} {self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
             return False
         body_length = self.get_percent_by_price(open_p, self.dataLastRow) - self.get_current_data_percent()
         down_shadow_length = self.get_current_data_percent() - self.get_percent_by_price(low, self.dataLastRow)
@@ -88,9 +97,9 @@ class PPT0(Base):
                 length = len(items)
                 for i in range(length):
                     if i + 2 < length:
-                        if close < items[i][1] and close > items[i + 1][1]:
-                            if low < items[i + 1][1] and low > items[i + 1][1]:
-                                close_time = datetime.strptime(f'{self.dataLastRow["date"]}{self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
+                        if close < float(items[i][1]) and close > float(items[i + 1][1]):
+                            if low < float(items[i + 1][1]) and low > float(items[i + 2][1]):
+                                close_time = datetime.strptime(f'{self.dataLastRow["date"]} {self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
                                 if Decimal((close_time - self.low_time).seconds) > Decimal(self.trade['params']['close_low_interval_time']):
                                     PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]}')
                                     self.buy_price = close
@@ -104,8 +113,8 @@ class PPT0(Base):
         length = self.get_data_length()
         if(length < PPT0._MIN_TIME_PERIOD_LENGTH):
             return False
-        time = float(self.trade['params']['speed']['time'])
-        amount = float(self.trade['params']['speed']['amount']) * 10000
+        time = float(self.trade['params']['money']['time'])
+        amount = float(self.trade['params']['money']['amount']) * 10000
         index = int(20 * time) + 1
         index = index * -1 if length >= index else length * -1
         buy_amount = 0

@@ -59,7 +59,7 @@ class Real(object):
             return force_state
         if(self.trade['state'] == Constants.STATE[5]):
             return self.cancelOrder()
-        if(self.trade['state'] != Constants.STATE[0]):
+        if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6]):
             return {'state' : self.trade['state']}
         if(self.strategy.need_create_order()):
             if(self.trade['result'] is not None and self.trade['result'] != '无' and self.trade['result'] != ''):
