@@ -196,6 +196,8 @@ class Real(object):
 
     def createDelegate(self, code, price, volume, op):
         try:
+            if str(self.strategy.__class__).find('PPT0') >= 0:
+                op = self.strategy.op
             if self.data_db['trade_lock'].find_one({}) is not None:
                 Real._logger.error('trade_lock is locked')
                 return {'state' : Constants.STATE[3], 'result' : '其他交易正在进行中'}
@@ -275,7 +277,7 @@ class Real(object):
                         Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
                         message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
                         state = Constants.STATE[4]
-                        if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.is_buy:
+                        if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.op == 'buy':
                             state = Constants.STATE[6]
                         return {'state' : state, 'result' : message, 'order' : trade}
             return {}

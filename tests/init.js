@@ -467,7 +467,7 @@ db.mocktrades.insertMany([{
         },
         "volume" : 1000
     }
-},
+}
 ]);
 db.zx.insert([{
     "concept" : "网红经济",

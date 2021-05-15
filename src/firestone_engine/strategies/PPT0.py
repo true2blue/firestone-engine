@@ -47,8 +47,10 @@ class PPT0(Base):
     def matchCondition(self):
         self.buildPP()
         if self.trade['state'] == Constants.STATE[0]:
+            self.op = 'buy'
             return self.match_buy_condition()
         elif self.trade['state'] == Constants.STATE[6]:
+            self.op = 'sell'
             return self.match_sell_condition()
         return False
 
@@ -65,7 +67,6 @@ class PPT0(Base):
             drop_from_high = self.get_percent_by_price(self.high, self.dataLastRow) - self.get_current_data_percent()
             if drop_from_high > Decimal(self.trade['params']['drop_from_high']):
                 PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched drop_from_high {drop_from_high}')
-                self.is_buy = False
                 return True
         if self.dataLastRow["time"] > self.trade['params']['force_sell_time']:
             PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched force_sell_time {self.dataLastRow["time"]}')
@@ -103,7 +104,6 @@ class PPT0(Base):
                                 if Decimal((close_time - self.low_time).seconds) > Decimal(self.trade['params']['close_low_interval_time']):
                                     PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]}')
                                     self.buy_price = close
-                                    self.is_buy = True
                                     return True
         return False
 
