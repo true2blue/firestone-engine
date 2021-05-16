@@ -62,7 +62,7 @@ class Real(object):
         if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6]):
             return {'state' : self.trade['state']}
         if(self.strategy.need_create_order()):
-            if(self.trade['result'] is not None and self.trade['result'] != '无' and self.trade['result'] != ''):
+            if(self.trade['result'] is not None and self.trade['result'] != '无' and self.trade['result'] != '' and self.trade['state'] != Constants.STATE[6]):
                 self.updateTrade({'result' : '无'})
             self.load_data()
             if(len(self.data['data']) == 0):
@@ -79,12 +79,16 @@ class Real(object):
             if(flag):
                 result = self.createOrder()
                 if(result['state'] == Constants.STATE[2]):
-                    if(self.strategyMeta['op'] == 'buy'):
+                    if(self.get_op() == 'buy'):
                         self.updateConfig({ '$inc': { 'curBuyNum': 1 } })
                     return {'state' : result['state'], 'htbh' : result['order']['result']['data']['htbh']}
         else:
             self.strategy.run(self.trade, self.config, self.db, type(self).__name__ == 'Mock')
         return {'state' : self.trade['state']}
+    
+    
+    def get_op(self):
+        return self.strategy.op if self.is_T0() else self.strategyMeta['op']
 
 
     
@@ -180,24 +184,30 @@ class Real(object):
         code = self.get_code()
         price = float(data['price'])
         Real._logger.info(f'start create order for code = {code}, time = {data["time"]}')
-        if(self.strategyMeta['op'] == 'buy'):
+        op = self.get_op()
+        if(op == 'buy'):
             amount = float(self.trade['params']['volume'])
-            volume = int(amount / price / 100) * 100
+            if self.is_T0():
+                volume = amount
+            else:
+                volume = int(amount / price / 100) * 100
             if(volume >= 100):
-                result = self.createDelegate(code, price, volume, self.strategyMeta['op'])
+                result = self.createDelegate(code, price, volume, op)
             else:
                 result = {'result' : '买入总额不足100股', 'state' : Constants.STATE[3]}
         else:
             volume = int(self.trade['params']['volume'])
-            result = self.createDelegate(code, price, volume, self.strategyMeta['op'])
+            result = self.createDelegate(code, price, volume, op)
         self.updateTrade(result)
         return result
+    
+    
+    def is_T0(self):
+        return str(self.strategy.__class__).find('PPT0') >= 0
 
 
     def createDelegate(self, code, price, volume, op):
         try:
-            if str(self.strategy.__class__).find('PPT0') >= 0:
-                op = self.strategy.op
             if self.data_db['trade_lock'].find_one({}) is not None:
                 Real._logger.error('trade_lock is locked')
                 return {'state' : Constants.STATE[3], 'result' : '其他交易正在进行中'}
@@ -277,7 +287,7 @@ class Real(object):
                         Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
                         message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
                         state = Constants.STATE[4]
-                        if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.op == 'buy':
+                        if self.is_T0() and self.strategy.op == 'buy':
                             state = Constants.STATE[6]
                         return {'state' : state, 'result' : message, 'order' : trade}
             return {}

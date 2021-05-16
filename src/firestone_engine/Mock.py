@@ -36,8 +36,6 @@ class Mock(Real):
 
 
     def createDelegate(self, code, price, volume, op):
-        if str(self.strategy.__class__).find('PPT0') >= 0:
-            op = self.strategy.op
         self.load_cookie()
         tradeType = 'cmd_wt_mairu' if op == 'buy' else 'cmd_wt_maichu'
         postData = {
@@ -78,7 +76,7 @@ class Mock(Real):
                         if(order['d_2135'] == htbh):
                             message = '以{}成交{}股,合同编号{}'.format(order['d_2129'], order['d_2128'], htbh)
                             state = Constants.STATE[4]
-                            if str(self.strategy.__class__).find('PPT0') >= 0 and self.strategy.op == 'buy':
+                            if self.is_T0() and self.strategy.op == 'buy':
                                 state = Constants.STATE[6]          
                             return {'state' : state, 'result' : message, 'order' : order}
                 return {}
