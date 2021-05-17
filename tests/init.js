@@ -176,6 +176,7 @@ db.strategies.insertMany([{
         "body_length" : "3.0",
         "down_shadow_body_ratio" : "0.2",
         "close_low_interval_time" : "60",
+        "close_low_interval_time_max" : "600",
         "money" : {
             "time" : "1",
             "amount" : "200"
@@ -461,6 +462,7 @@ db.mocktrades.insertMany([{
         "body_length" : "0.62",
         "down_shadow_body_ratio" : "1.5",
         "close_low_interval_time" : "60",
+        "close_low_interval_time_max" : "600",
         "money" : {
             "time" : 1,
             "amount" : 15

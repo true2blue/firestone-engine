@@ -30,17 +30,17 @@ class PPT0(Base):
         rm3 = (r2 + r3) / 2
         self.pp = {
             'r3' : Utils.round_dec(r3),
-            'rm3' : Utils.round_dec(rm3),
+            # 'rm3' : Utils.round_dec(rm3),
             'r2' : Utils.round_dec(r2),
-            'rm2' : Utils.round_dec(rm2),
+            # 'rm2' : Utils.round_dec(rm2),
             'r1' : Utils.round_dec(r1),
-            'rm1' : Utils.round_dec(rm1),
+            # 'rm1' : Utils.round_dec(rm1),
             'pp' : Utils.round_dec(pp),
-            'sm1' : Utils.round_dec(sm1),
+            # 'sm1' : Utils.round_dec(sm1),
             's1' : Utils.round_dec(s1),
-            'sm2' : Utils.round_dec(sm2),
+            # 'sm2' : Utils.round_dec(sm2),
             's2' : Utils.round_dec(s2),
-            'sm3' : Utils.round_dec(sm3),
+            # 'sm3' : Utils.round_dec(sm3),
             's3' : Utils.round_dec(s3)
         }
 
@@ -79,7 +79,7 @@ class PPT0(Base):
 
     
     def match_shape(self):
-        items = list(self.pp.items())[5:]
+        items = list(self.pp.items())[2:]
         open_p = float(self.dataLastRow['open'])
         close = float(self.dataLastRow['price'])
         low = float(self.dataLastRow['low'])
@@ -99,10 +99,13 @@ class PPT0(Base):
                 for i in range(length):
                     if i + 2 < length:
                         if close < float(items[i][1]) and close > float(items[i + 1][1]):
+                            PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched close = {close} between {items[i + 1][0]} {float(items[i + 1][1])} {items[i][0]} {float(items[i][1])}')
                             if low < float(items[i + 1][1]) and low > float(items[i + 2][1]):
+                                PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched low = {low} between {items[i + 2][0]} {float(items[i + 2][1])} {items[i + 1][0]} {float(items[i + 1][1])}')
                                 close_time = datetime.strptime(f'{self.dataLastRow["date"]} {self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
-                                if Decimal((close_time - self.low_time).seconds) > Decimal(self.trade['params']['close_low_interval_time']):
-                                    PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]}')
+                                interval = Decimal((close_time - self.low_time).seconds)
+                                if interval > Decimal(self.trade['params']['close_low_interval_time']) and interval < Decimal(self.trade['params']['close_low_interval_time_max']):
+                                    PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]} {float(items[i + 1][1])}')
                                     self.buy_price = close
                                     return True
         return False
