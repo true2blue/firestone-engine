@@ -12,9 +12,9 @@ class PPT0(Base):
     _MIN_TIME_PERIOD_LENGTH = 15
 
     def buildPP(self):
-        pre_high = self.trade['params']['pre']['high']
-        pre_low = self.trade['params']['pre']['low']
-        pre_close = self.trade['params']['pre']['close']
+        pre_high = float(self.trade['params']['pre']['high'])
+        pre_low = float(self.trade['params']['pre']['low'])
+        pre_close = float(self.trade['params']['pre']['close'])
         pp = (pre_high + pre_low + pre_close) / 3
         r1 = 2 * pp - pre_low
         r2 = pp + pre_high - pre_low
