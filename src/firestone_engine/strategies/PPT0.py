@@ -62,7 +62,8 @@ class PPT0(Base):
         elif close > self.high:
             self.high = close
         stop_win = self.get_current_data_percent() - self.get_percent_by_price(self.buy_price, self.dataLastRow)
-        if stop_win > Decimal(self.trade['params']['stop_win']):
+        if hasattr(self, 'start_stop_win') or stop_win > Decimal(self.trade['params']['stop_win']):
+            self.start_stop_win = True
             PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched stop_win {stop_win}')
             drop_from_high = self.get_percent_by_price(self.high, self.dataLastRow) - self.get_current_data_percent()
             if drop_from_high > Decimal(self.trade['params']['drop_from_high']):
