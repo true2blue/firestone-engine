@@ -106,7 +106,7 @@ class PPT0(Base):
                                 if hasattr(self, 'low_time'):
                                     interval = Decimal((close_time - self.low_time).seconds)
                                     if interval > Decimal(self.trade['params']['close_low_interval_time']) and interval < Decimal(self.trade['params']['close_low_interval_time_max']):
-                                        PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]} {float(items[i + 1][1])}')
+                                        PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched reverse up from {items[i + 1][0]} {float(items[i + 1][1])} interval = {interval}')
                                         self.buy_price = close
                                         return True
         return False

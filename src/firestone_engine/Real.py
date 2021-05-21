@@ -264,7 +264,7 @@ class Real(object):
 
 
     def check_chengjiao(self, htbh):
-        if(self.trade['state'] == Constants.STATE[4]):
+        if(self.trade['state'] == Constants.STATE[4] or self.trade['state'] == Constants.STATE[6]):
             return
         update = self.queryChenjiao(htbh)
         if(len(update) == 0):

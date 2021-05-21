@@ -50,10 +50,13 @@ class Trader(object):
                 htbh = result['htbh']
                 for i, hour in enumerate(self.hours):
                     trigger = CronTrigger(hour=hour,minute=self.minutes[i],second='*/30', end_date=self.end_date)
-                    self.scheduler.add_job(self.check_chengjiao,kwargs={'htbh' : htbh}, trigger=trigger)
+                    self.scheduler.add_job(self.check_chengjiao,kwargs={'htbh' : htbh}, trigger=trigger, id='check_chengjiao')
             #done
             elif (result['state'] == Constants.STATE[4]):
                 self.is_finsih_flag = True
+            #T0 buy done    
+            elif (result['state'] == Constants.STATE[6]):
+                self.scheduler.remove_job('check_chengjiao')
         except Exception as e:
             Trader._logger.error(e)
 
