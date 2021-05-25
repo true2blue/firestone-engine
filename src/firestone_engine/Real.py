@@ -53,7 +53,7 @@ class Real(object):
 
     def run(self):
         self.load_trade_config()
-        if(self.config['curBuyNum'] >= self.config['maxBuyNum']):
+        if(self.config['curBuyNum'] >= self.config['maxBuyNum'] and (not self.is_T0())):
             force_state = {'state' : Constants.STATE[4]}
             self.updateTrade(force_state)
             return force_state
@@ -79,7 +79,7 @@ class Real(object):
             if(flag):
                 result = self.createOrder()
                 if(result['state'] == Constants.STATE[2]):
-                    if(self.get_op() == 'buy'):
+                    if(self.get_op() == 'buy' and (not self.is_T0())):
                         self.updateConfig({ '$inc': { 'curBuyNum': 1 } })
                     return {'state' : result['state'], 'htbh' : result['order']['result']['data']['htbh']}
         else:
