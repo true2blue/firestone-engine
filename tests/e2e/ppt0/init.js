@@ -34,6 +34,7 @@ db.strategies.insertMany([{
             "low" : "0",
             "close" : "0" 
         },
+        "points" : "7",
         "stop_win" : "3.0",
         "drop_from_high" : "0.5",
         "body_length" : "3.0",
@@ -69,6 +70,7 @@ db.mocktrades.insertMany([{
             "low" : "7.61",
             "close" : "7.86"
         },
+        "points" : "7",
         "stop_win" : "1.3",
         "drop_from_high" : "0.2",
         "body_length" : "0.62",

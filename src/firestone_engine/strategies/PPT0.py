@@ -28,21 +28,32 @@ class PPT0(Base):
         rm1 = (pp + r1) / 2
         rm2 = (r1 + r2) / 2
         rm3 = (r2 + r3) / 2
-        self.pp = {
-            'r3' : Utils.round_dec(r3),
-            # 'rm3' : Utils.round_dec(rm3),
-            'r2' : Utils.round_dec(r2),
-            # 'rm2' : Utils.round_dec(rm2),
-            'r1' : Utils.round_dec(r1),
-            # 'rm1' : Utils.round_dec(rm1),
-            'pp' : Utils.round_dec(pp),
-            # 'sm1' : Utils.round_dec(sm1),
-            's1' : Utils.round_dec(s1),
-            # 'sm2' : Utils.round_dec(sm2),
-            's2' : Utils.round_dec(s2),
-            # 'sm3' : Utils.round_dec(sm3),
-            's3' : Utils.round_dec(s3)
-        }
+        if 'points' in self.trade['params'] and str(self.trade['params']['points']) == '13':
+            self.pp = {
+                'r3' : Utils.round_dec(r3),
+                'rm3' : Utils.round_dec(rm3),
+                'r2' : Utils.round_dec(r2),
+                'rm2' : Utils.round_dec(rm2),
+                'r1' : Utils.round_dec(r1),
+                'rm1' : Utils.round_dec(rm1),
+                'pp' : Utils.round_dec(pp),
+                'sm1' : Utils.round_dec(sm1),
+                's1' : Utils.round_dec(s1),
+                'sm2' : Utils.round_dec(sm2),
+                's2' : Utils.round_dec(s2),
+                'sm3' : Utils.round_dec(sm3),
+                's3' : Utils.round_dec(s3)
+            }
+        else:
+            self.pp = {
+                'r3' : Utils.round_dec(r3),
+                'r2' : Utils.round_dec(r2),
+                'r1' : Utils.round_dec(r1),
+                'pp' : Utils.round_dec(pp),
+                's1' : Utils.round_dec(s1),
+                's2' : Utils.round_dec(s2),
+                's3' : Utils.round_dec(s3)
+            }
 
     def matchCondition(self):
         self.buildPP()
@@ -80,7 +91,8 @@ class PPT0(Base):
 
     
     def match_shape(self):
-        items = list(self.pp.items())[2:]
+        start = 5 if len(self.pp) == 13 else 2
+        items = list(self.pp.items())[start:]
         open_p = float(self.dataLastRow['open'])
         close = float(self.dataLastRow['price'])
         low = float(self.dataLastRow['low'])
