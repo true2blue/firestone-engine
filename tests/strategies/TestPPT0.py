@@ -28,7 +28,7 @@ class TestPPT0(TestBase, unittest.TestCase):
         self.assertEqual(self.temp_data[-1]['time'], '09:35:00')
         
     def runAssertSell(self):
-        self.assertEqual(self.temp_data[-1]['time'], '14:06:36')
+        self.assertEqual(self.temp_data[-1]['time'], '13:53:48')
         
         
     def testRunWrapper(self):
