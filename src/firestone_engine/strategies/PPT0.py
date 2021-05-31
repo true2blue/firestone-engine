@@ -106,7 +106,7 @@ class PPT0(Base):
         if body_length > Decimal(self.trade['params']['body_length']):
             PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched body length drop {body_length}')
             ratio = Utils.round_dec(down_shadow_length / body_length)
-            if ratio < Decimal(self.trade['params']['down_shadow_body_ratio']):
+            if ratio < Decimal(self.trade['params']['down_shadow_body_ratio']) and ratio > Decimal(self.trade['params']['down_shadow_body_ratio_min']):
                 PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched down_shadow_body_ratio {ratio}')
                 length = len(items)
                 for i in range(length):

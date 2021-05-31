@@ -40,6 +40,7 @@ db.strategies.insertMany([{
         "drop_from_high" : "0.5",
         "body_length" : "3.0",
         "down_shadow_body_ratio" : "0.2",
+        "down_shadow_body_ratio_min" : "0.1",
         "close_low_interval_time" : "60",
         "close_low_interval_time_max" : "600",
         "money" : {
@@ -77,6 +78,7 @@ db.mocktrades.insertMany([{
         "drop_from_high" : "0.2",
         "body_length" : "0.62",
         "down_shadow_body_ratio" : "1.5",
+        "down_shadow_body_ratio_min" : "0.1",
         "close_low_interval_time" : "60",
         "close_low_interval_time_max" : "600",
         "money" : {
