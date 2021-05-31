@@ -113,8 +113,18 @@ class PPT0(Base):
                     if i + 2 < length:
                         if close < float(items[i][1]) and close > float(items[i + 1][1]):
                             PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched close = {close} between {items[i + 1][0]} {float(items[i + 1][1])} {items[i][0]} {float(items[i][1])}')
+                            match_low = False
                             if low < float(items[i + 1][1]) and low > float(items[i + 2][1]):
-                                PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched low = {low} between {items[i + 2][0]} {float(items[i + 2][1])} {items[i + 1][0]} {float(items[i + 1][1])}')
+                                approach = (float(items[i + 1][1]) - low) / (float(items[i + 1][1]) - float(items[i + 2][1]))
+                                if approach <= float(self.trade['params']['approach']):
+                                    PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched low = {low}, approach = {approach} between {items[i + 2][0]} {float(items[i + 2][1])} {items[i + 1][0]} {float(items[i + 1][1])}')
+                                    match_low = True
+                            elif low < float(items[i][1]) and low > float(items[i + 1][1]):
+                                approach = (low - float(items[i + 1][1])) / (float(items[i][1]) - float(items[i + 1][1]))
+                                if approach <= float(self.trade['params']['approach']):
+                                    PPT0._logger.info(f'tardeId = {self.trade["_id"]}, {datetime.now()}, the strategy {self.__class__} matched low = {low}, approach = {approach} between {items[i + 1][0]} {float(items[i + 1][1])} {items[i][0]} {float(items[i][1])}')
+                                    match_low = True
+                            if match_low:
                                 close_time = datetime.strptime(f'{self.dataLastRow["date"]} {self.dataLastRow["time"]}', '%Y-%m-%d %H:%M:%S')
                                 if hasattr(self, 'low_time'):
                                     interval = Decimal((close_time - self.low_time).seconds)
