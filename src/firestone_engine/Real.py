@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from pydoc import locate
 from datetime import datetime
+from time import time
 import os
 import logging
 from .Constants import Constants
@@ -12,7 +13,8 @@ from .strategies.BasicSell import BasicSell
 from .strategies.ConceptPick import ConceptPick
 from .strategies.BatchYdls import BatchYdls
 from .strategies.PPT0 import PPT0
-import easytrader
+import requests
+import json
 
 class Real(object):
 
@@ -42,13 +44,27 @@ class Real(object):
             'trades' : 'trades',
             'configs' : 'configs'
         }   
-        self.init_easy_trader()
+        self.init_session()
         
     
-    def init_easy_trader(self):
-        self.user = easytrader.use('universal_client')
-        self.user.connect(r'C:/同花顺软件/同花顺/xiadan.exe')
-        self.user.enable_type_keys_for_editor() 
+    def init_session(self):
+        self.__header = {
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Host': 'jy.xzsec.com',
+            'Origin': 'https://jy.xzsec.com',
+            'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
 
 
     def run(self):
@@ -206,39 +222,45 @@ class Real(object):
         return str(self.strategy.__class__).find('PPT0') >= 0
 
 
+    def load_config(self):
+        self.__header['gw_reqtimestamp'] = f'{int(time()*1000)}'
+        self.__header['Cookie'] = self.config['cookie']
+        self.__validatekey = self.config['validatekey']
+
+
     def createDelegate(self, code, price, volume, op):
         try:
-            if self.data_db['trade_lock'].find_one({}) is not None:
-                Real._logger.error('trade_lock is locked')
-                return {'state' : Constants.STATE[3], 'result' : '其他交易正在进行中'}
-            self.data_db['trade_lock'].insert({'lock' : 1})
-            result = None
-            if op == 'buy':
-                result = self.user.buy(code, price=price, amount=volume)
-            else:
-                result = self.user.sell(code, price=price, amount=volume)
-            if 'message' in result and result['message'] == 'success':
+            self.load_config()
+            tradeType = 'Buy' if op == 'buy' else 'Sell'
+            self.__header['Referer'] = f'https://jy.xzsec.com/Trade/{tradeType}'
+            market = 'HA' if code.startswith('6') else 'SA'
+            postData = {
+                'stockCode': code,
+                'price': price,
+                'amount': volume,
+                'tradeType': tradeType[0],
+                'zqmc': self.data['data'][code][-1]['name'],
+                'market': market
+            }
+            url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
+            response = requests.post(url,data=postData,headers=self.__header)
+            Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, response.text))
+            result = json.loads(response.text)
+            if(result['Errcode'] == 0):
+                op_cn = '买入' if op == 'buy' else '卖出'
+                message = '订单提交: 在{},以{}{}[{}] {}股'.format(datetime.now(), price, op_cn, code, volume)
                 order = {
                     'result' : {
                         'data' : {
-                            'htbh' : f'{code}_{price}_{volume}_{op}',
-                            'code' : code,
-                            'price' : price,
-                            'volume' : volume,
-                            'op' : op
+                            'htbh' : result['Data'][0]['Wtbh']
                         }
                     }
                 }
-                Real._logger.info('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order success'.format(self.tradeId, code, price, volume, op))
-                return {'state' : Constants.STATE[2], 'result' : '订单已提交，请在客户端查看', 'order' : order}
-            else:    
-                Real._logger.error('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, result))
-                return {'state' : Constants.STATE[3], 'result' : f'创建订单失败, {result}'}
+                return {'state' : Constants.STATE[2], 'result' : message, 'order' : order}
+            return {'state' : Constants.STATE[3], 'result' : result}
         except Exception as e:
-            Real._logger.error('tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, e))
-            return {'state' : Constants.STATE[3], 'result' : '创建订单失败，发生异常'}
-        finally:
-            self.data_db['trade_lock'].remove()
+            Real._logger.error('mock tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, e))
+            return {'state' : Constants.STATE[3], 'result' : '创建订单失败'}
 
 
     def cancelOrder(self):
@@ -256,7 +278,21 @@ class Real(object):
 
 
     def cancelDelegate(self, htbh, wtrq):
-        return {'result' : 'not allowed', 'state' : Constants.STATE[3]}  
+        self.load_config()
+        self.__header['Referer'] = 'https://jy.xzsec.com/Trade/Buy'   
+        self.__header['Accept'] = 'text/plain, */*; q=0.01'   
+        self.__header['Accept-Language'] = 'zh-CN,zh;q=0.9'         
+        postData = {
+            'revokes' : f'{wtrq}_{htbh}'
+        }
+        try:   
+            url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
+            response = requests.post(url,data=postData,headers=self.__header)
+            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
+            return {'state' : Constants.STATE[1], 'result' : '合同[{}]已撤销'.format(htbh)}
+        except Exception as e:
+                Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
+                return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
 
 
     def reLogin(self):
@@ -274,28 +310,31 @@ class Real(object):
 
     def queryChenjiao(self, htbh):
         try:
-            if self.data_db['trade_lock'].find_one({}) is not None:
-                Real._logger.error('trade_lock is locked')
+            self.load_config()
+            self.__header['Referer'] = 'https://jy.xzsec.com/Trade/Sale'
+            postData = {
+                'qqhs': '10',
+                'dwc': ''
+            }
+            url = f'https://jy.xzsec.com/Search/GetDealData?validatekey={self.__validatekey}'
+            response = requests.post(url,data=postData,headers=self.__header)
+            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, response.text))
+            result = json.loads(response.text)
+            if(result['Status'] == 0):
+                orders = result['Data']
+                if(orders is not None and len(orders) > 0):
+                    for order in orders:
+                        if(order['Wtbh'] == htbh):
+                            message = '以{}成交{}股,合同编号{}'.format(order['Cjje'], order['Cjsl'], htbh)
+                            state = Constants.STATE[4]
+                            if self.is_T0() and self.strategy.op == 'buy':
+                                state = Constants.STATE[6]          
+                            return {'state' : state, 'result' : message, 'order' : order}
                 return {}
-            self.data_db['trade_lock'].insert({'lock' : 1})
-            trades = self.user.today_trades
-            if trades is not None and len(trades) > 0:
-                bh = htbh.split('_')
-                op = '买入' if bh[3] == 'buy' else '卖出'
-                for trade in trades:
-                    if trade['证券代码'] == bh[0] and str(trade['成交数量']) == str(bh[2]) and trade['操作'] == op:
-                        Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
-                        message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
-                        state = Constants.STATE[4]
-                        if self.is_T0() and self.strategy.op == 'buy':
-                            state = Constants.STATE[6]
-                        return {'state' : state, 'result' : message, 'order' : trade}
-            return {}
+            return {'state' : Constants.STATE[3], 'result' : result['Message']}
         except Exception as e:
-            Real._logger.error('tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
+            Real._logger.error('real tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
             return {'state' : Constants.STATE[3], 'result' : '查询订单[{}]成交状况失败，请检查配置'.format(htbh)}
-        finally:
-            self.data_db['trade_lock'].remove()
 
 
     
