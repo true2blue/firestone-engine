@@ -242,11 +242,13 @@ class Real(object):
                 'zqmc': self.data['data'][code][-1]['name'],
                 'market': market
             }
+            if op == 'sell':
+                postData['gddm'] = self.config['gddm']
             url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
             Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, response.text))
             result = json.loads(response.text)
-            if(result['Errcode'] == 0):
+            if(result['Status'] == 0):
                 op_cn = '买入' if op == 'buy' else '卖出'
                 message = '订单提交: 在{},以{}{}[{}] {}股'.format(datetime.now(), price, op_cn, code, volume)
                 order = {
