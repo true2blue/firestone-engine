@@ -223,7 +223,7 @@ class Real(object):
 
 
     def load_config(self):
-        self.__header['gw_reqtimestamp'] = int(time()*1000)
+        self.__header['gw_reqtimestamp'] = f'{int(time()*1000)}'
         self.__header['Cookie'] = self.config['cookie']
         self.__validatekey = self.config['validatekey']
 
@@ -239,17 +239,26 @@ class Real(object):
                 'price': price,
                 'amount': volume,
                 'tradeType': tradeType[0],
-                'zqmc': self.data['data'][-1]['name'],
+                'zqmc': self.data['data'][code][-1]['name'],
                 'market': market
             }
+            if op == 'sell':
+                postData['gddm'] = self.config['gddm']
             url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
             Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, response.text))
             result = json.loads(response.text)
-            if(result['Errcode'] == 0):
+            if(result['Status'] == 0):
                 op_cn = '买入' if op == 'buy' else '卖出'
                 message = '订单提交: 在{},以{}{}[{}] {}股'.format(datetime.now(), price, op_cn, code, volume)
-                return {'state' : Constants.STATE[2], 'result' : message, 'order' : result}
+                order = {
+                    'result' : {
+                        'data' : {
+                            'htbh' : result['Data'][0]['Wtbh']
+                        }
+                    }
+                }
+                return {'state' : Constants.STATE[2], 'result' : message, 'order' : order}
             return {'state' : Constants.STATE[3], 'result' : result}
         except Exception as e:
             Real._logger.error('mock tradeId = {}, code = {}, price = {}, volume = {}, op = {}, faield with exception = {}'.format(self.tradeId, code, price, volume, op, e))
@@ -271,7 +280,21 @@ class Real(object):
 
 
     def cancelDelegate(self, htbh, wtrq):
-        return {'result' : 'not allowed', 'state' : Constants.STATE[3]}  
+        self.load_config()
+        self.__header['Referer'] = 'https://jy.xzsec.com/Trade/Buy'   
+        self.__header['Accept'] = 'text/plain, */*; q=0.01'   
+        self.__header['Accept-Language'] = 'zh-CN,zh;q=0.9'         
+        postData = {
+            'revokes' : f'{wtrq}_{htbh}'
+        }
+        try:   
+            url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
+            response = requests.post(url,data=postData,headers=self.__header)
+            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
+            return {'state' : Constants.STATE[1], 'result' : '合同[{}]已撤销'.format(htbh)}
+        except Exception as e:
+                Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
+                return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
 
 
     def reLogin(self):
@@ -289,28 +312,31 @@ class Real(object):
 
     def queryChenjiao(self, htbh):
         try:
-            if self.data_db['trade_lock'].find_one({}) is not None:
-                Real._logger.error('trade_lock is locked')
+            self.load_config()
+            self.__header['Referer'] = 'https://jy.xzsec.com/Trade/Sale'
+            postData = {
+                'qqhs': '10',
+                'dwc': ''
+            }
+            url = f'https://jy.xzsec.com/Search/GetDealData?validatekey={self.__validatekey}'
+            response = requests.post(url,data=postData,headers=self.__header)
+            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, response.text))
+            result = json.loads(response.text)
+            if(result['Status'] == 0):
+                orders = result['Data']
+                if(orders is not None and len(orders) > 0):
+                    for order in orders:
+                        if(order['Wtbh'] == htbh):
+                            message = '以{}成交{}股,合同编号{}'.format(order['Cjje'], order['Cjsl'], htbh)
+                            state = Constants.STATE[4]
+                            if self.is_T0() and self.strategy.op == 'buy':
+                                state = Constants.STATE[6]          
+                            return {'state' : state, 'result' : message, 'order' : order}
                 return {}
-            self.data_db['trade_lock'].insert({'lock' : 1})
-            trades = self.user.today_trades
-            if trades is not None and len(trades) > 0:
-                bh = htbh.split('_')
-                op = '买入' if bh[3] == 'buy' else '卖出'
-                for trade in trades:
-                    if trade['证券代码'] == bh[0] and str(trade['成交数量']) == str(bh[2]) and trade['操作'] == op:
-                        Real._logger.info('tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, trade))
-                        message = '以{}成交{}股,合同编号{}'.format(trade['成交均价'], trade['成交数量'], trade['合同编号'])
-                        state = Constants.STATE[4]
-                        if self.is_T0() and self.strategy.op == 'buy':
-                            state = Constants.STATE[6]
-                        return {'state' : state, 'result' : message, 'order' : trade}
-            return {}
+            return {'state' : Constants.STATE[3], 'result' : result['Message']}
         except Exception as e:
-            Real._logger.error('tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
+            Real._logger.error('real tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
             return {'state' : Constants.STATE[3], 'result' : '查询订单[{}]成交状况失败，请检查配置'.format(htbh)}
-        finally:
-            self.data_db['trade_lock'].remove()
 
 
     
