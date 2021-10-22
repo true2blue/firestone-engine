@@ -16,11 +16,14 @@ class TestReal(unittest.TestCase):
         }
 
 
-    def test_create_delegate(self):
-        print(self.real.createDelegate('000836', 2.65, 100, 'sell'))
+    # def test_create_delegate(self):
+    #     print(self.real.createDelegate('000836', 2.65, 100, 'buy'))
 
     # def test_query_chengjiao(self):
     #     print(self.real.queryChenjiao('94584'))
+
+    def test_cancel_delegate(self):
+        print(self.real.cancelDelegate('xxxx', '20211022'))
 
 if __name__ == "__main__":
     #     # 5678 is the default attach port in the VS Code debug configurations

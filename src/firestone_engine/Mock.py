@@ -79,7 +79,7 @@ class Mock(Real):
                             if self.is_T0() and self.strategy.op == 'buy':
                                 state = Constants.STATE[6]          
                             return {'state' : state, 'result' : message, 'order' : order}
-                return {}
+                return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
             return {'state' : Constants.STATE[3], 'result' : result['errormsg']}   
         except Exception as e:
                 Mock._logger.error('mock tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
@@ -98,7 +98,7 @@ class Mock(Real):
             Mock._logger.info('mock tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
             result = json.loads(response.text)
             if(result['errorcode'] == 0):
-                return {'state' : Constants.STATE[1], 'result' : '合同[{}]已撤销'.format(htbh)}
+                return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
             return {'state' : Constants.STATE[3], 'result' : result['errormsg']}
         except Exception as e:
                 Mock._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))

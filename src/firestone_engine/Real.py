@@ -75,6 +75,17 @@ class Real(object):
             return force_state
         if(self.trade['state'] == Constants.STATE[5]):
             return self.cancelOrder()
+        if(self.trade['state'] == Constants.STATE[0] and 'order' in self.trade and 'result' in self.trade['order']):
+            htbh = self.trade['order']['result']['data']['htbh']
+            self.updateTrade({'order' : {}})
+            return {'state' : self.trade['state'], 'htbh' : htbh}
+        if(self.trade['state'] == Constants.STATE[6] and 'order' in self.trade):
+            htbh = ''
+            if 'Wtbh' in self.trade['order']:
+                htbh = self.trade['order']['Wtbh']
+            elif 'd_2135' in self.trade['order']:
+                htbh = self.trade['order']['d_2135']
+            return {'state' : self.trade['state'], 'htbh' : htbh}
         if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6]):
             return {'state' : self.trade['state']}
         if(self.strategy.need_create_order()):
@@ -95,8 +106,6 @@ class Real(object):
             if(flag):
                 result = self.createOrder()
                 if(result['state'] == Constants.STATE[2]):
-                    if(self.get_op() == 'buy' and (not self.is_T0())):
-                        self.updateConfig({ '$inc': { 'curBuyNum': 1 } })
                     return {'state' : result['state'], 'htbh' : result['order']['result']['data']['htbh']}
         else:
             self.strategy.run(self.trade, self.config, self.db, type(self).__name__ == 'Mock')
@@ -266,9 +275,9 @@ class Real(object):
 
 
     def cancelOrder(self):
-        if('order' not in self.trade):
+        if('order' not in self.trade or len(self.trade['order']) == 0):
             Real._logger.error('no order found in trade = {}, failde to cancel'.format(self.tradeId))
-            update = {'state' : Constants.STATE[1], 'result' : '未找到订单'}
+            update = {'state' : Constants.STATE[3], 'result' : '未找到订单'}
             self.updateTrade(update)
             return update
         htbh = self.trade['order']['result']['data']['htbh']
@@ -291,7 +300,7 @@ class Real(object):
             url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
             Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
-            return {'state' : Constants.STATE[1], 'result' : '合同[{}]已撤销'.format(htbh)}
+            return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
         except Exception as e:
                 Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
                 return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
@@ -305,9 +314,9 @@ class Real(object):
         if(self.trade['state'] == Constants.STATE[4] or self.trade['state'] == Constants.STATE[6]):
             return
         update = self.queryChenjiao(htbh)
-        if(len(update) == 0):
-            return
         self.updateTrade(update)
+        if(update['state'] == Constants.STATE[4] and self.get_op() == 'buy' and (not self.is_T0())):
+            self.updateConfig({ '$inc': { 'curBuyNum': 1 } })
         
 
     def queryChenjiao(self, htbh):
@@ -332,7 +341,7 @@ class Real(object):
                             if self.is_T0() and self.strategy.op == 'buy':
                                 state = Constants.STATE[6]          
                             return {'state' : state, 'result' : message, 'order' : order}
-                return {}
+                return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
             return {'state' : Constants.STATE[3], 'result' : result['Message']}
         except Exception as e:
             Real._logger.error('real tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
