@@ -314,6 +314,8 @@ class Real(object):
         if(self.trade['state'] == Constants.STATE[4] or self.trade['state'] == Constants.STATE[6]):
             return
         update = self.queryChenjiao(htbh)
+        if len(update) == 0:
+            return
         self.updateTrade(update)
         if(update['state'] == Constants.STATE[4] and self.get_op() == 'buy' and (not self.is_T0())):
             self.updateConfig({ '$inc': { 'curBuyNum': 1 } })
@@ -341,7 +343,9 @@ class Real(object):
                             if self.is_T0() and self.strategy.op == 'buy':
                                 state = Constants.STATE[6]          
                             return {'state' : state, 'result' : message, 'order' : order}
-                return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
+                if 'auto_cancel' in self.trade['params'] and self.trade['params']['auto_cancel'] == '1':
+                    return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
+                return {}
             return {'state' : Constants.STATE[3], 'result' : result['Message']}
         except Exception as e:
             Real._logger.error('real tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
