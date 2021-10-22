@@ -79,7 +79,9 @@ class Mock(Real):
                             if self.is_T0() and self.strategy.op == 'buy':
                                 state = Constants.STATE[6]          
                             return {'state' : state, 'result' : message, 'order' : order}
-                return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
+                if 'auto_cancel' in self.trade['params'] and self.trade['params']['auto_cancel'] == '1':
+                    return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
+                return {}
             return {'state' : Constants.STATE[3], 'result' : result['errormsg']}   
         except Exception as e:
                 Mock._logger.error('mock tradeId = {} query chengjiao faield e = {}'.format(self.tradeId, e))
