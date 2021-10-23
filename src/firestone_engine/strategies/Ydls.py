@@ -27,11 +27,15 @@ class Ydls(Basic):
         open_percent = self.get_percent_by_price(open_price, self.dataLastRow)
         if(open_percent < Decimal(self.trade['params']['open_percent']['low']) or open_percent > Decimal(self.trade['params']['open_percent']['high'])):
             return False
-        if(hasattr(self, 'force_stop')):
+        if(hasattr(self, 'force_stop') and self.dataLastRow["code"] in self.force_stop):
             return False
         break_top = Utils.round_dec((high - price) / (pre_close) * 100)
         if(break_top > Decimal(self.trade['params']['speed']['break_top'])):
-            self.force_stop = True
+            if(not hasattr(self, 'force_stop')):
+                self.force_stop = []
+            code = self.dataLastRow["code"]
+            if code not in self.force_stop:
+                self.force_stop.append(code)
             Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls break_top = {break_top}, force stop')
             return False
         upper_shadow = Utils.round_dec((high - price) / (high - low))

@@ -58,7 +58,7 @@ db.strategies.insertMany([
                 "amount" : "50"
             },
             "volume" : 1000,
-            "auto_cancel" : "1"
+            "auto_cancel" : "0"
         }
     },
     {
@@ -105,7 +105,7 @@ db.trades.insertMany([
             "open_percent_low" : "-1.0",
             "open_percent_high" : "3.5",
             "max_stock_percent" : "-3.0",
-            "auto_cancel" : "1",
+            "auto_cancel" : "0",
             "volume" : "1000"
         }
     }
@@ -132,7 +132,7 @@ db.mocktrades.insertMany([
             "open_percent_low" : "-1.0",
             "open_percent_high" : "3.5",
             "max_stock_percent" : "-3.0",
-            "auto_cancel" : "1",
+            "auto_cancel" : "0",
             "volume" : "1000"
         }
     }
