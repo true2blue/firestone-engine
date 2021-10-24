@@ -300,7 +300,9 @@ class Real(object):
             url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
             Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
-            return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
+            if response.text.find('撤单委托已提交') >= 0:
+                return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
+            {'state' : Constants.STATE[3], 'result' : response.text}
         except Exception as e:
                 Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
                 return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
