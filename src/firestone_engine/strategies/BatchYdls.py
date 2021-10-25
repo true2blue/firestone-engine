@@ -17,7 +17,8 @@ class BatchYdls(object):
         self.db = db
         self.data = data
         self.index = index
-        self.ydls = Ydls()
+        if not hasattr(self, 'ydls'):
+            self.ydls = Ydls()
         self.load_ydls_strategy()
         today = datetime.now()
         self.today = '{}-{}-{}'.format(today.year,('0' + str(today.month))[-2:],('0' + str(today.day))[-2:])
