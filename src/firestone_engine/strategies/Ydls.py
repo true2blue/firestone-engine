@@ -11,9 +11,26 @@ class Ydls(Basic):
 
 
     def match_data(self):
+        if self.is_forece_stop():
+            return False
         if(Basic.match_data(self)):
-            return self.match_shape() and self.match_speed() and self.match_money()
+            result = self.match_shape() and self.match_speed() and self.match_money()
+            if result:
+                self.add_to_force_stop()
+            return result
         return False
+
+
+    def is_forece_stop(self):
+        return hasattr(self, 'force_stop') and self.dataLastRow["code"] in self.force_stop
+
+
+    def add_to_force_stop(self):
+        if(not hasattr(self, 'force_stop')):
+            self.force_stop = []
+        code = self.dataLastRow["code"]
+        if code not in self.force_stop:
+            self.force_stop.append(code)
 
 
     def match_shape(self):
@@ -27,15 +44,9 @@ class Ydls(Basic):
         open_percent = self.get_percent_by_price(open_price, self.dataLastRow)
         if(open_percent < Decimal(self.trade['params']['open_percent']['low']) or open_percent > Decimal(self.trade['params']['open_percent']['high'])):
             return False
-        if(hasattr(self, 'force_stop') and self.dataLastRow["code"] in self.force_stop):
-            return False
         break_top = Utils.round_dec((high - price) / (pre_close) * 100)
         if(break_top > Decimal(self.trade['params']['speed']['break_top'])):
-            if(not hasattr(self, 'force_stop')):
-                self.force_stop = []
-            code = self.dataLastRow["code"]
-            if code not in self.force_stop:
-                self.force_stop.append(code)
+            self.add_to_force_stop()
             Ydls._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, Ydls break_top = {break_top}, force stop')
             return False
         upper_shadow = Utils.round_dec((high - price) / (high - low))

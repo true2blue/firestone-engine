@@ -52,7 +52,7 @@ db.strategies.insertMany([
                 "ratio_l" : "2",
                 "ratio_r" : "3",
                 "time" : "3.1",
-                "break_top" : "1.5",
+                "break_top" : "2.5",
                 "time_2" : "2",
                 "percent" : "0.5",
                 "amount" : "50"
