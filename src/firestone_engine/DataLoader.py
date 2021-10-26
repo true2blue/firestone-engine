@@ -131,11 +131,8 @@ class DataLoader(object):
             for l in list_wrapper:
                 tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))               
         else:
-            for i, l in enumerate(list_wrapper):
-                if(i == 0):
-                    tasks.append(asyncio.async(self.get_real_time_data(l)))
-                else:
-                    tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))
+            for l in list_wrapper:
+                tasks.append(asyncio.async(self.get_real_time_data(l)))
         loop.run_until_complete(asyncio.wait(tasks))
         loop.close()
         
