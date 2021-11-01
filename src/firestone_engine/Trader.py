@@ -49,7 +49,7 @@ class Trader(object):
             if(result['state'] == Constants.STATE[2] and 'htbh' in result):
                 htbh = result['htbh']
                 for i, hour in enumerate(self.hours):
-                    trigger = CronTrigger(hour=hour,minute=self.minutes[i],second='*/30', end_date=self.end_date)
+                    trigger = CronTrigger(hour=hour,minute=self.minutes[i],second='*/15', start_date=datetime.now() + timedelta(seconds=15), end_date=self.end_date)
                     self.scheduler.add_job(self.check_chengjiao,kwargs={'htbh' : htbh}, trigger=trigger, id=f'check_chengjiao_{htbh}_{i}')
             #done
             elif (result['state'] == Constants.STATE[4]):
@@ -59,7 +59,9 @@ class Trader(object):
                 if 'htbh' in result and result['htbh'] != '':
                     htbh = result['htbh']
                     for i, hour in enumerate(self.hours):
-                        self.scheduler.remove_job(f'check_chengjiao_{htbh}_{i}')
+                        job = self.scheduler.get_job(f'check_chengjiao_{htbh}_{i}')
+                        if job is not None:
+                            self.scheduler.remove_job(f'check_chengjiao_{htbh}_{i}')
         except Exception as e:
             Trader._logger.error(e)
 
