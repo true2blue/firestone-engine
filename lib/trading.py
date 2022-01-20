@@ -34,6 +34,18 @@ if int(v.split('.')[1])>=25 or int(v.split('.')[0])>0:
 else:    
     from pandas.compat import StringIO
 
+headers = {
+  'Accept': '*/*',
+  'Accept-Encoding': 'gzip, deflate',
+  'Accept-Language': 'en,zh-CN;q=0.9,zh;q=0.8',
+  'Cache-Control': 'max-age=0',
+  'Connection': 'keep-alive',
+  'Host': 'hq.sinajs.cn',
+  'Upgrade-Insecure-Requests': '1',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36',
+  'Referer': 'http://vip.stock.finance.sina.com.cn/'
+}
+
 def get_hist_data(code=None, start=None, end=None,
                   ktype='D', retry_count=3,
                   pause=0.001):
@@ -382,7 +394,7 @@ async def get_realtime_quotes(symbols=None, proxyManager=None):
         proxy = proxyManager.get_proxy()
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-            async with session.get(ct.LIVE_DATA_URL%(ct.P_TYPE['http'], ct.DOMAINS['sinahq'], _random(), symbols_list),proxy=proxy) as response:
+            async with session.get(ct.LIVE_DATA_URL%(ct.P_TYPE['http'], ct.DOMAINS['sinahq'], _random(), symbols_list),headers=headers,proxy=proxy) as response:
                 text = await response.read()
                 text = text.decode('GBK')
                 reg = re.compile(r'\="(.*?)\";')
