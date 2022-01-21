@@ -34,18 +34,18 @@ db.strategies.insertMany([{
             "low" : "0",
             "close" : "0" 
         },
-        "points" : "7",
-        "approach" : "0.5",
+        "start_buy_line" : "7.8",
+        "min_rebound" : "0.5",
+        "max_rebound" : "3.0",
         "stop_win" : "3.0",
         "drop_from_high" : "0.5",
-        "body_length" : "3.0",
-        "down_shadow_body_ratio" : "0.2",
-        "down_shadow_body_ratio_min" : "0.1",
-        "close_low_interval_time" : "60",
-        "close_low_interval_time_max" : "600",
+        "speed" : {
+            "time_2" : "1",
+            "percent" : "1"
+        },
         "money" : {
-            "time" : 1,
-            "amount" : 200
+            "time" : "1",
+            "amount" : "200"
         },
         "volume" : 1000
     }
@@ -72,18 +72,18 @@ db.mocktrades.insertMany([{
             "low" : "7.61",
             "close" : "7.86"
         },
-        "points" : "7",
-        "approach" : "0.5",
-        "stop_win" : "1.3",
-        "drop_from_high" : "0.2",
-        "body_length" : "0.62",
-        "down_shadow_body_ratio" : "1.5",
-        "down_shadow_body_ratio_min" : "0.1",
-        "close_low_interval_time" : "60",
-        "close_low_interval_time_max" : "600",
+        "start_buy_line" : "7.8",
+        "min_rebound" : "0.5",
+        "max_rebound" : "3.0",
+        "stop_win" : "3.0",
+        "drop_from_high" : "0.5",
+        "speed" : {
+            "time_2" : "1",
+            "percent" : "1"
+        },
         "money" : {
-            "time" : 1,
-            "amount" : 15
+            "time" : "1",
+            "amount" : "200"
         },
         "volume" : 1000
     }

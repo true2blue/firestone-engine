@@ -25,10 +25,10 @@ class TestPPT0(TestBase, unittest.TestCase):
         self.strategy = PPT0()
         
     def runAssert(self):
-        self.assertEqual(self.temp_data[-1]['time'], '09:35:00')
+        self.assertEqual(self.temp_data[-1]['time'], '09:33:42')
         
     def runAssertSell(self):
-        self.assertEqual(self.temp_data[-1]['time'], '13:53:48')
+        self.assertEqual(self.temp_data[-1]['time'], '14:50:03')
         
         
     def testRunWrapper(self):
