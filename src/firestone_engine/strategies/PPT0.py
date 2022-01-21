@@ -51,10 +51,12 @@ class PPT0(Base):
     
     def match_shape(self):
         close = float(self.dataLastRow['price'])
+        open_p = float(self.dataLastRow['open'])
+        pre_close = float(self.dataLastRow['pre_close'])
+        drop_percent_from_open = (close - open_p) / pre_close * 100
         start_buy_line = float(self.trade['params']['start_buy_line'])
-        if close <= start_buy_line:
+        if abs(drop_percent_from_open) >= start_buy_line:
             low = float(self.dataLastRow['low'])
-            pre_close = float(self.dataLastRow['pre_close'])
             percent = Utils.round_dec((close - low) / pre_close * 100)
             min_rebound = Decimal(self.trade['params']['min_rebound'])
             max_rebound = Decimal(self.trade['params']['max_rebound'])
