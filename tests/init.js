@@ -167,6 +167,7 @@ db.strategies.insertMany([{
         },
         "force_sell_time" : "14:50:00",
         "start_buy_line" : "0.7",
+        "buy_on_low_limit" : "1",
         "min_rebound" : "0.5",
         "max_rebound" : "3.0",
         "stop_win" : "3.0",
@@ -450,12 +451,8 @@ db.mocktrades.insertMany([{
             "end" : "15:00"
         },
         "force_sell_time" : "14:50:00",
-        "pre" : {
-            "high" : "7.98",
-            "low" : "7.61",
-            "close" : "7.86"
-        },
         "start_buy_line" : "0.7",
+        "buy_on_low_limit" : "1",
         "min_rebound" : "0.5",
         "max_rebound" : "3.0",
         "stop_win" : "1.0",

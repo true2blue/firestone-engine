@@ -79,12 +79,13 @@ class Real(object):
             htbh = self.trade['order']['result']['data']['htbh']
             self.updateTrade({'order' : {}})
             return {'state' : self.trade['state'], 'htbh' : htbh}
-        if(self.trade['state'] == Constants.STATE[6] and 'order' in self.trade):
+        if(self.trade['state'] == Constants.STATE[6] and 'order' in self.trade and len(self.trade['order']) > 0):
             htbh = ''
             if 'Wtbh' in self.trade['order']:
                 htbh = self.trade['order']['Wtbh']
             elif 'd_2135' in self.trade['order']:
                 htbh = self.trade['order']['d_2135']
+            self.updateTrade({'order' : {}})
             return {'state' : self.trade['state'], 'htbh' : htbh}
         if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6]):
             return {'state' : self.trade['state']}

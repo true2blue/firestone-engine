@@ -23,7 +23,7 @@ class NoTrade(Mock):
             state = Constants.STATE[6]
         if 'auto_cancel' in self.trade['params'] and self.trade['params']['auto_cancel'] == '1':
             return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
-        return {'state' : state, 'result' : message, 'order' : {'result' : {'data' : {'htbh' : '000000'}}}}
+        return {'state' : state, 'result' : message, 'order' : {'d_2135' : '000000'}}
         # return {}
 
 
