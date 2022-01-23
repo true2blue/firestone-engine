@@ -57,7 +57,8 @@ class PPT0(Base):
         start_buy_line = float(self.trade['params']['start_buy_line'])
         target_p = Utils.round_dec(start_buy_line * -1 / 100 * pre_close + open_p)
         low_limit = Utils.round_dec(pre_close * 0.9)
-        if abs(drop_percent_from_open) >= start_buy_line or (low_limit >= target_p and self.trade['params']['buy_on_low_limit'] == '1'):
+        if hasattr(self, 'start_monitor') or abs(drop_percent_from_open) >= start_buy_line or (low_limit >= target_p and self.trade['params']['buy_on_low_limit'] == '1'):
+            self.start_monitor = True
             low = float(self.dataLastRow['low'])
             percent = Utils.round_dec((close - low) / pre_close * 100)
             min_rebound = Decimal(self.trade['params']['min_rebound'])
