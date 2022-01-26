@@ -249,7 +249,7 @@ class Real(object):
                 'price': price,
                 'amount': volume,
                 'tradeType': tradeType[0],
-                'zqmc': self.data['data'][code][-1]['name'],
+                'zqmc': self.get_data()[-1]['name'],
                 'market': market
             }
             if op == 'sell':
