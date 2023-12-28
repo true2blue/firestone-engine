@@ -1,0 +1,208 @@
+import logging
+from .Constants import Constants
+import os
+from pymongo import MongoClient
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+import asyncio
+import aiohttp
+from datetime import datetime, timedelta
+from .ProxyManager import ProxyManager
+import json
+
+class DFCFDataLoader(object):
+    
+    _logger = logging.getLogger(__name__)
+
+    _MONFO_URL = '127.0.0.1'
+
+    _DATA_DB = 'firestone-data'
+    
+    _CODE_FROM_DB = '000000'
+    
+    _UT = '6d2ffaa6a585d612eda28417681d58fb'
+    
+    _SERVER_IDX = '63'
+    
+    _FIELDS = 'f14,f17,f18,f2,f15,f16,f31,f32,f5,f6,f12'
+    
+    _HEADERS = {
+    'Accept': ' text/event-stream',
+    'Accept-Encoding': ' gzip, deflate, br',
+    'Accept-Language': ' en,zh-CN;q=0.9,zh;q=0.8',
+    'Cache-Control': ' no-cache',
+    'Connection': ' keep-alive',
+    'Host': f' {_SERVER_IDX}.push2.eastmoney.com',
+    'Origin': ' https://quote.eastmoney.com',
+    'Referer': ' https://quote.eastmoney.com/zixuan/?from=quotecenter',
+    'Sec-Fetch-Dest': ' empty',
+    'Sec-Fetch-Mode': ' cors',
+    'Sec-Fetch-Site': ' same-site',
+    'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': ' "Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': ' ?0',
+    'sec-ch-ua-platform': ' "Windows"'
+    }
+    
+    def __init__(self, code_list, hours=['9','11','10,13-14'], minutes=['25-59','0-29','*']):
+        self.proxyManager = ProxyManager()
+        self.use_proxy = False
+        self.is_finsih_flag = False
+        self.original_code_list = code_list
+        self.current_code_list = []
+        self.client = MongoClient(DFCFDataLoader._MONFO_URL, 27017)
+        self.db = self.client[os.environ['FR_DB']]
+        self.data_client = MongoClient(DFCFDataLoader._MONFO_URL, 27018)
+        self.data_db = self.data_client[DFCFDataLoader._DATA_DB]
+        self.scheduler = BackgroundScheduler()
+        self.add_job(hours, minutes)
+        
+        
+    def is_load_code_from_db(self):
+        return DFCFDataLoader._CODE_FROM_DB in self.original_code_list
+    
+    def get_code_list_from_db_inner(self, coll, temp_list):
+        codes_data = self.db[coll].find({"deleted":False, "params.executeDate" : datetime.now().strftime('%Y-%m-%d')},{"code" : 1, "_id" : 0})
+        code_list = [code_data["code"] for code_data in list(codes_data) if code_data["code"] != 'N/A']
+        for code in code_list:
+            if(',' in code):
+                temp_list.extend(code.split(','))
+            else:
+                temp_list.append(code)
+
+    def get_code_list_from_db(self):
+        temp_list = []
+        self.get_code_list_from_db_inner('trades', temp_list)
+        self.get_code_list_from_db_inner('mocktrades', temp_list)
+        code_list = temp_list        
+        for code in code_list:
+            if(code.startswith('3')):
+                if(Constants.INDEX[5] not in code_list):
+                    code_list.append(Constants.INDEX[5])
+            else:  
+                if(Constants.INDEX[0] not in code_list):
+                    code_list.append(Constants.INDEX[0])
+        code_list.sort()
+        return list(set(code_list))
+    
+    def get_code_list(self):
+        if self.is_load_code_from_db():
+            return self.get_code_list_from_db()
+        codes = [code for code in self.original_code_list if code != 'N/A']
+        codes.sort()
+        if len(codes) == 0:
+            self.is_finsih_flag = True
+        return codes
+    
+    def add_job(self, hours, minutes):
+        for i, hour in enumerate(hours):
+            trigger = CronTrigger(hour=hour,minute=minutes[i],second='*/3', end_date=(datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d'))
+            if(i == len(hours) - 1):
+                self.scheduler.add_job(self.run,id="last_job",trigger=trigger, max_instances=30)
+            else:
+                self.scheduler.add_job(self.run,trigger=trigger, max_instances=30)
+                
+                
+    def run(self):
+        try:
+            temp = self.get_code_list()
+            if temp != self.current_code_list:
+                diff = list(set(temp) - set(self.current_code_list))
+                DFCFDataLoader._logger.info('start get the data for {}'.format(diff))
+                self.current_code_list = temp
+                self.load_data(diff)
+        except Exception as e:
+            DFCFDataLoader._logger.error(e)
+            
+            
+    def load_data(self, diff):
+        list_wrapper = []
+        size = len(diff)
+        if(size > 50):
+            list_size = (size // 50) + (1 if (size % 50) > 0 else 0)
+            for i in range(list_size):
+                list_wrapper.append(diff[i * 50 : i * 50 + 50])
+        else:
+            list_wrapper.append(diff)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        tasks = []
+        if(self.use_proxy):
+            for l in list_wrapper:
+                tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))               
+        else:
+            for l in list_wrapper:
+                tasks.append(asyncio.async(self.get_real_time_data(l)))
+        loop.run_until_complete(asyncio.wait(tasks))
+        loop.close()
+        
+        
+    def map_code(self, code):
+        if code == Constants.INDEX[0] or code.startswith('6'):
+            return f'1.{code}'
+        elif code == Constants.INDEX[5] or code.startswith('0') or code.startswith('3'):
+            return f'0.{code}'
+        return None
+    
+    def divide_100(self, value):
+        if isinstance(value, int):
+            return value / 100
+        return value
+    
+    def parseAndSaveData(self, data):
+        try:
+            formated_jsons = {
+                'name' : data['f14'],
+                'open' : self.divide_100(data['f17']),
+                'pre_close' : self.divide_100(data['f18']),
+                'price' : self.divide_100(data['f2']),
+                'high' : self.divide_100(data['f15']),
+                'low' : self.divide_100(data['f16']),
+                'bid' : self.divide_100(data['f31']),
+                'ask' : self.divide_100(data['f32']),
+                'volume' : data['f5'],
+                'amount' : data['f6'],
+                'date' : datetime.now().strftime('%Y-%m-%d'),
+                'time' : datetime.now().strftime('%H:%M:%S'),
+                'code' : data['f12']  
+            }
+            self.data_db[formated_jsons['code'] + '-' + formated_jsons['date']].insert(formated_jsons)
+        except Exception as e:
+            print(f'save data for code={formated_jsons["code"]} e = {e}')
+            DFCFDataLoader._logger.error(f'save data for code={formated_jsons["code"]} e = {e}')
+        
+    async def get_real_time_data(self, l, proxyManager=None):
+        try:
+            DFCFDataLoader._logger.info('start get realtime data for {}'.format(l))
+            async with aiohttp.ClientSession() as session:
+                codes = [code for code in [self.map_code(code) for code in l] if code is not None]
+                url = f"https://{DFCFDataLoader._SERVER_IDX}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
+                async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
+                    if response.status == 200:
+                        async for event in response.content.iter_any():
+                            data = event.decode()[6:].strip()
+                            jsonData = json.loads(data)
+                            if 'data' in jsonData and jsonData['data'] is not None:
+                                total = jsonData['data']['total']
+                                for i in range(total):
+                                    self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                    else:
+                        DFCFDataLoader._logger.error('Failed to connect to the event stream.')
+        except Exception as e:
+            DFCFDataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
+            self.use_proxy = True
+    
+    
+    def start(self):
+        self.scheduler.start()
+        DFCFDataLoader._logger.info('job get data for {} is start'.format(self.original_code_list))
+        
+    def is_finsih(self):
+        job = self.scheduler.get_job('last_job')
+        return self.is_finsih_flag or job is None or job.next_run_time is None
+
+    def stop(self):
+        self.client.close()
+        self.scheduler.shutdown(wait=True)
+        DFCFDataLoader._logger.info('job get data for {} is stop'.format(self.original_code_list))
+        

@@ -23,6 +23,7 @@ import time
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from firestone_engine.DataLoader import DataLoader
+from firestone_engine.DFCFDataLoader import DFCFDataLoader
 
 from firestone_engine import __version__
 
@@ -42,10 +43,13 @@ def get_data(codes, is_mock, mock_trade, date, hours, minutes):
     Returns:
       data
     """
-    if(hours is None):
-        data_loader = DataLoader(codes, is_mock=is_mock, mock_trade=mock_trade, date=date)
+    if is_mock:
+        if(hours is None):
+            data_loader = DataLoader(codes, is_mock=is_mock, mock_trade=mock_trade, date=date)
+        else:
+            data_loader = DataLoader(codes, is_mock=is_mock, mock_trade=mock_trade, date=date, hours=hours, minutes=minutes) 
     else:
-        data_loader = DataLoader(codes, is_mock=is_mock, mock_trade=mock_trade, date=date, hours=hours, minutes=minutes)  
+        data_loader = DFCFDataLoader(codes, hours=hours, minutes=minutes)
     data_loader.start()
     try:
         while(not data_loader.is_finsih()):
@@ -150,10 +154,10 @@ def main(args):
     """
     args = parse_args(args)
     # if(args.debug):
-    #     # 5678 is the default attach port in the VS Code debug configurations
-    #     print("start debug on port 5678")
-    #     ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-    #     ptvsd.wait_for_attach()
+        # 5678 is the default attach port in the VS Code debug configurations
+        # print("start debug on port 5678")
+        # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+        # ptvsd.wait_for_attach()
     if(args.test):
         os.environ['FR_DB'] = 'firestone-test'
     else:
