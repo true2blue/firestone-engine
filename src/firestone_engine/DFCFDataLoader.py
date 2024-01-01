@@ -22,7 +22,7 @@ class DFCFDataLoader(object):
     
     _UT = '6d2ffaa6a585d612eda28417681d58fb'
     
-    _SERVER_IDX = '63'
+    _SERVER_IDX = ['63', '74', '22']
     
     _FIELDS = 'f14,f17,f18,f2,f15,f16,f31,f32,f5,f6,f12'
     
@@ -32,7 +32,7 @@ class DFCFDataLoader(object):
     'Accept-Language': ' en,zh-CN;q=0.9,zh;q=0.8',
     'Cache-Control': ' no-cache',
     'Connection': ' keep-alive',
-    'Host': f' {_SERVER_IDX}.push2.eastmoney.com',
+    'Host': f' {_SERVER_IDX[0]}.push2.eastmoney.com',
     'Origin': ' https://quote.eastmoney.com',
     'Referer': ' https://quote.eastmoney.com/zixuan/?from=quotecenter',
     'Sec-Fetch-Dest': ' empty',
@@ -171,12 +171,15 @@ class DFCFDataLoader(object):
             print(f'save data for code={formated_jsons["code"]} e = {e}')
             DFCFDataLoader._logger.error(f'save data for code={formated_jsons["code"]} e = {e}')
         
-    async def get_real_time_data(self, l, proxyManager=None):
+    async def get_real_time_data(self, l, server_idx = 0, proxyManager = None):
         try:
+            if server_idx >= len(DFCFDataLoader._SERVER_IDX):
+                return
             DFCFDataLoader._logger.info('start get realtime data for {}'.format(l))
             async with aiohttp.ClientSession() as session:
                 codes = [code for code in [self.map_code(code) for code in l] if code is not None]
-                url = f"https://{DFCFDataLoader._SERVER_IDX}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
+                url = f"https://{DFCFDataLoader._SERVER_IDX[server_idx]}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
+                DFCFDataLoader._HEADERS['Host'] = f'{DFCFDataLoader._SERVER_IDX[server_idx]}.push2.eastmoney.com'
                 async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
                     if response.status == 200:
                         async for event in response.content.iter_any():
@@ -187,10 +190,14 @@ class DFCFDataLoader(object):
                                 for i in range(total):
                                     self.parseAndSaveData(jsonData['data']['diff'][str(i)])
                     else:
-                        DFCFDataLoader._logger.error('Failed to connect to the event stream.')
+                        server_idx += 1
+                        DFCFDataLoader._logger.error('Failed to connect to the event stream, start retry')
+                        self.get_real_time_data(l, server_idx = server_idx, proxyManager = proxyManager)
         except Exception as e:
             DFCFDataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
             self.use_proxy = True
+            server_idx += 1
+            self.get_real_time_data(l, server_idx = server_idx, proxyManager=proxyManager)
     
     
     def start(self):
