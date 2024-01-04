@@ -178,10 +178,9 @@ class DFCFDataLoader(object):
             
             
     def is_during_the_trade_time(self):
-        # now = datetime.now().strftime('%H:%M:%S')
-        # return (now >= '09:30:00' and now <= '11:30:00') or (now >= '13:00:00' and now <= '15:00:00')
-        return True
-            
+        now = datetime.now().strftime('%H:%M:%S')
+        return (now >= '09:30:00' and now <= '11:30:00') or (now >= '13:00:00' and now <= '15:00:00')
+
             
     async def get_real_time_data_wrapper(self, l, proxyManager = None):
         for server_idx in DFCFDataLoader._SERVER_IDX:
