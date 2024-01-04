@@ -22,7 +22,7 @@ class DFCFDataLoader(object):
     
     _UT = '6d2ffaa6a585d612eda28417681d58fb'
     
-    _SERVER_IDX = ['63', '74', '22']
+    _SERVER_IDX = [f'0{x}' if x < 10 else f'{x}' for x in list(range(0, 100))]
     
     _FIELDS = 'f14,f17,f18,f2,f15,f16,f31,f32,f5,f6,f12'
     
@@ -129,10 +129,10 @@ class DFCFDataLoader(object):
         tasks = []
         if(self.use_proxy):
             for l in list_wrapper:
-                tasks.append(asyncio.async(self.get_real_time_data(l, proxyManager=self.proxyManager)))               
+                tasks.append(asyncio.async(self.get_real_time_data_wrapper(l, proxyManager=self.proxyManager)))               
         else:
             for l in list_wrapper:
-                tasks.append(asyncio.async(self.get_real_time_data(l)))
+                tasks.append(asyncio.async(self.get_real_time_data_wrapper(l)))
         loop.run_until_complete(asyncio.wait(tasks))
         loop.close()
         
@@ -149,55 +149,67 @@ class DFCFDataLoader(object):
             return value / 100
         return value
     
+    def get_value(self, key, data):
+        if key in data:
+            return data[key]
+        return None
+    
     def parseAndSaveData(self, data):
         try:
             formated_jsons = {
-                'name' : data['f14'],
-                'open' : self.divide_100(data['f17']),
-                'pre_close' : self.divide_100(data['f18']),
-                'price' : self.divide_100(data['f2']),
-                'high' : self.divide_100(data['f15']),
-                'low' : self.divide_100(data['f16']),
-                'bid' : self.divide_100(data['f31']),
-                'ask' : self.divide_100(data['f32']),
-                'volume' : data['f5'],
-                'amount' : data['f6'],
+                'name' : self.get_value('f14', data),
+                'open' : self.divide_100(self.get_value('f17', data)),
+                'pre_close' : self.divide_100(self.get_value('f18', data)),
+                'price' : self.divide_100(self.get_value('f2', data)),
+                'high' : self.divide_100(self.get_value('f15', data)),
+                'low' : self.divide_100(self.get_value('f16', data)),
+                'bid' : self.divide_100(self.get_value('f31', data)),
+                'ask' : self.divide_100(self.get_value('f32', data)),
+                'volume' : self.get_value('f5', data),
+                'amount' : self.get_value('f6', data),
                 'date' : datetime.now().strftime('%Y-%m-%d'),
                 'time' : datetime.now().strftime('%H:%M:%S'),
-                'code' : data['f12']  
+                'code' : self.get_value('f12', data)
             }
-            self.data_db[formated_jsons['code'] + '-' + formated_jsons['date']].insert(formated_jsons)
+            if formated_jsons['code'] is not None:
+                self.data_db[formated_jsons['code'] + '-' + formated_jsons['date']].insert(formated_jsons)
         except Exception as e:
-            print(f'save data for code={formated_jsons["code"]} e = {e}')
-            DFCFDataLoader._logger.error(f'save data for code={formated_jsons["code"]} e = {e}')
+            DFCFDataLoader._logger.error(f'save data for data={data} e = {e}')
+            
+            
+    def is_during_the_trade_time(self):
+        # now = datetime.now().strftime('%H:%M:%S')
+        # return (now >= '09:30:00' and now <= '11:30:00') or (now >= '13:00:00' and now <= '15:00:00')
+        return True
+            
+            
+    async def get_real_time_data_wrapper(self, l, proxyManager = None):
+        for server_idx in DFCFDataLoader._SERVER_IDX:
+            try:
+                while not self.is_during_the_trade_time():
+                    await asyncio.sleep(1)
+                await self.get_real_time_data(l, server_idx = server_idx, proxyManager = proxyManager)
+            except Exception as e:
+                DFCFDataLoader._logger.error(f'load data error, server_idx = {server_idx}, e = {e}')
         
     async def get_real_time_data(self, l, server_idx = 0, proxyManager = None):
-        try:
-            if server_idx >= len(DFCFDataLoader._SERVER_IDX):
-                return
-            DFCFDataLoader._logger.info('start get realtime data for {}'.format(l))
-            async with aiohttp.ClientSession() as session:
-                codes = [code for code in [self.map_code(code) for code in l] if code is not None]
-                url = f"https://{DFCFDataLoader._SERVER_IDX[server_idx]}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
-                DFCFDataLoader._HEADERS['Host'] = f'{DFCFDataLoader._SERVER_IDX[server_idx]}.push2.eastmoney.com'
-                async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
-                    if response.status == 200:
-                        async for event in response.content.iter_any():
-                            data = event.decode()[6:].strip()
-                            jsonData = json.loads(data)
-                            if 'data' in jsonData and jsonData['data'] is not None:
-                                total = jsonData['data']['total']
-                                for i in range(total):
-                                    self.parseAndSaveData(jsonData['data']['diff'][str(i)])
-                    else:
-                        server_idx += 1
-                        DFCFDataLoader._logger.error('Failed to connect to the event stream, start retry')
-                        self.get_real_time_data(l, server_idx = server_idx, proxyManager = proxyManager)
-        except Exception as e:
-            DFCFDataLoader._logger.error('load data error, use_proxy = {}, e = {}'.format(self.use_proxy, e))
-            self.use_proxy = True
-            server_idx += 1
-            self.get_real_time_data(l, server_idx = server_idx, proxyManager=proxyManager)
+        DFCFDataLoader._logger.info('start get realtime data for {}'.format(l))
+        async with aiohttp.ClientSession() as session:
+            codes = [code for code in [self.map_code(code) for code in l] if code is not None]
+            url = f"https://{server_idx}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
+            DFCFDataLoader._HEADERS['Host'] = f'{server_idx}.push2.eastmoney.com'
+            async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
+                if response.status == 200:
+                    async for event in response.content.iter_any():
+                        data = event.decode()[6:].strip()
+                        jsonData = json.loads(data)
+                        if 'data' in jsonData and jsonData['data'] is not None:
+                            total = jsonData['data']['total']
+                            for i in range(total):
+                                self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                else:
+                    DFCFDataLoader._logger.error('Failed to connect to the event stream, start retry')
+                    raise Exception(f'server response {response.status}')
     
     
     def start(self):
