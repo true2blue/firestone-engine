@@ -1,11 +1,12 @@
 import asyncio
 import aiohttp
 import json
+from datetime import datetime
 
 async def parse_content(response):
     async for event in response.content.iter_any():
         data = event.decode()[6:].strip()
-        print(data)
+        print(f'{datetime.now()} {data}')
 
 async def consume_event_stream(server_idx):
     headers = {
@@ -37,7 +38,7 @@ async def consume_event_stream(server_idx):
                 
                 
 async def wrapper():
-    for server_idx in ['63', '74', '22']:
+    for server_idx in range(100):
         try:
             await consume_event_stream(server_idx)
         except Exception as e:

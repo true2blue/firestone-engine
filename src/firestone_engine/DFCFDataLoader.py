@@ -206,12 +206,15 @@ class DFCFDataLoader(object):
             async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
                 if response.status == 200:
                     async for event in response.content.iter_any():
-                        data = event.decode()[6:].strip()
-                        jsonData = json.loads(data)
-                        if 'data' in jsonData and jsonData['data'] is not None:
-                            total = jsonData['data']['total']
-                            for i in range(total):
-                                self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                        try:
+                            data = event.decode()[6:].strip()
+                            jsonData = json.loads(data)
+                            if 'data' in jsonData and jsonData['data'] is not None:
+                                total = jsonData['data']['total']
+                                for i in range(total):
+                                    self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                        except Exception as e:
+                            DFCFDataLoader._logger.error(f'parse data error {event.decode()}, {e}')
                 else:
                     DFCFDataLoader._logger.error('Failed to connect to the event stream, start retry')
                     raise Exception(f'server response {response.status}')
