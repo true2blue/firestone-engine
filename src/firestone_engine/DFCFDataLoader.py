@@ -48,6 +48,7 @@ class DFCFDataLoader(object):
         self.proxyManager = ProxyManager()
         self.use_proxy = False
         self.is_finsih_flag = False
+        self.previous_data = {}
         self.original_code_list = code_list
         self.current_code_list = []
         self.client = MongoClient(DFCFDataLoader._MONFO_URL, 27017)
@@ -149,30 +150,35 @@ class DFCFDataLoader(object):
             return value / 100
         return value
     
-    def get_value(self, key, data):
+    def get_value(self, key, data, pre_key, pre_data):
+        pre_value = pre_data[pre_key] if pre_data is not None and pre_key in pre_data else None
         if key in data:
-            return data[key]
-        return None
+            return data[key] if data[key] is not None else pre_value
+        return pre_value
     
     def parseAndSaveData(self, data):
         try:
+            DFCFDataLoader._logger.info(f'data={data}')
+            code = data['f12']
+            previous_data = self.previous_data[code] if code in self.previous_data else None
             formated_jsons = {
-                'name' : self.get_value('f14', data),
-                'open' : self.divide_100(self.get_value('f17', data)),
-                'pre_close' : self.divide_100(self.get_value('f18', data)),
-                'price' : self.divide_100(self.get_value('f2', data)),
-                'high' : self.divide_100(self.get_value('f15', data)),
-                'low' : self.divide_100(self.get_value('f16', data)),
-                'bid' : self.divide_100(self.get_value('f31', data)),
-                'ask' : self.divide_100(self.get_value('f32', data)),
-                'volume' : self.get_value('f5', data),
-                'amount' : self.get_value('f6', data),
+                'name' : self.get_value('f14', data, 'name', previous_data),
+                'open' : self.divide_100(self.get_value('f17', data, 'open', previous_data)),
+                'pre_close' : self.divide_100(self.get_value('f18', data, 'pre_close', previous_data)),
+                'price' : self.divide_100(self.get_value('f2', data, 'price', previous_data)),
+                'high' : self.divide_100(self.get_value('f15', data, 'high', previous_data)),
+                'low' : self.divide_100(self.get_value('f16', data, 'low', previous_data)),
+                'bid' : self.divide_100(self.get_value('f31', data, 'bid', previous_data)),
+                'ask' : self.divide_100(self.get_value('f32', data, 'ask', previous_data)),
+                'volume' : self.get_value('f5', data, 'volume', previous_data),
+                'amount' : self.get_value('f6', data, 'amount', previous_data),
                 'date' : datetime.now().strftime('%Y-%m-%d'),
                 'time' : datetime.now().strftime('%H:%M:%S'),
-                'code' : self.get_value('f12', data)
+                'code' : self.get_value('f12', data, 'code', previous_data)
             }
             if formated_jsons['code'] is not None:
                 self.data_db[formated_jsons['code'] + '-' + formated_jsons['date']].insert(formated_jsons)
+                self.previous_data[code] = formated_jsons
         except Exception as e:
             DFCFDataLoader._logger.error(f'save data for data={data} e = {e}')
             
