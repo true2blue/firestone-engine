@@ -467,6 +467,40 @@ db.mocktrades.insertMany([{
         },
         "volume" : 1000
     }
+},
+{
+    "_id" : ObjectId("5db7e0a555609bb27252edb0"),
+    "code" : "300693",
+    "state" : "运行中",
+    "result" : "无",
+    "userId" : ObjectId("5d905db9fc84d3224b0eb59c"),
+    "strategyId" : ObjectId("5da19b7d181fc3600c5544c7"),
+    "createDate" : ISODate("2024-01-08T00:00:00.000Z"),
+    "deleted" : false,
+    "params" : {
+        "code" : "300693",
+        "executeDate" : "2024-01-08",
+        "monitorTime" : {
+            "start" : "09:30",
+            "end" : "15:00"
+        },
+        "force_sell_time" : "14:50:00",
+        "start_buy_line" : "0.3",
+        "buy_on_low_limit" : "1",
+        "min_rebound" : "0.5",
+        "max_rebound" : "3.0",
+        "stop_win" : "1.0",
+        "drop_from_high" : "0.5",
+        "speed" : {
+            "time_2" : "1",
+            "percent" : "0.5"
+        },
+        "money" : {
+            "time" : "1",
+            "amount" : "100"
+        },
+        "volume" : 1000
+    }
 }
 ]);
 db.zx.insert([{

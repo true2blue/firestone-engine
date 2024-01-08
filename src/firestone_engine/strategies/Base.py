@@ -61,9 +61,9 @@ class Base(object):
     def is_positive_buy(self, row, last_row):
         if(last_row['time'] <= '09:30:03'):
             return False
-        if((datetime.strptime(row['time'], '%H:%M:%S') - datetime.strptime(last_row['time'], '%H:%M:%S')).seconds >= 5):
+        if((datetime.strptime(row['time'], '%H:%M:%S') - datetime.strptime(last_row['time'], '%H:%M:%S')).seconds >= 10):
             return False
         price = Decimal(row['price'])
-        a1_p = Decimal(last_row['a1_p'])
+        a1_p = Decimal(last_row['ask'])
         return price >= a1_p
     
