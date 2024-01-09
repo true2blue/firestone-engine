@@ -212,7 +212,8 @@ class DFCFDataLoader(object):
                             if 'data' in jsonData and jsonData['data'] is not None:
                                 total = jsonData['data']['total']
                                 for i in range(total):
-                                    self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                                    if str(i) in jsonData['data']['diff']:
+                                        self.parseAndSaveData(jsonData['data']['diff'][str(i)])
                         except Exception as e:
                             DFCFDataLoader._logger.error(f'parse data error {event.decode()}, {e}')
                 else:
