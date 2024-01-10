@@ -67,7 +67,7 @@ class Ydls(Basic):
         if(length < Ydls._MIN_TIME_PERIOD_LENGTH):
             return False
         time = float(self.trade['params']['speed']['time_2'])
-        index = int(20 * time) + 1
+        index = int(10 * time) + 1
         index = index * -1 if length >= index else length * -1
         pre_price = Decimal(self.data[index]['price'])
         price = Decimal(self.dataLastRow['price'])
@@ -86,7 +86,7 @@ class Ydls(Basic):
             return False
         time = float(self.trade['params']['speed']['time'])
         amount = float(self.trade['params']['speed']['amount']) * 10000
-        index = int(20 * time) + 1
+        index = int(10 * time) + 1
         index = index * -1 if length >= index else length * -1
         buy_amount = 0
         while(index < -1):
