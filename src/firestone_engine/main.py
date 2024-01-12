@@ -49,7 +49,10 @@ def get_data(codes, is_mock, mock_trade, date, hours, minutes):
         else:
             data_loader = DataLoader(codes, is_mock=is_mock, mock_trade=mock_trade, date=date, hours=hours, minutes=minutes) 
     else:
-        data_loader = DFCFDataLoader(codes, hours=hours, minutes=minutes)
+        if hours is None:
+            data_loader = DFCFDataLoader(codes)
+        else:
+            data_loader = DFCFDataLoader(codes, hours=hours, minutes=minutes)
     data_loader.start()
     try:
         while(not data_loader.is_finsih()):
