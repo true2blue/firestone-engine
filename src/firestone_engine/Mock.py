@@ -16,7 +16,7 @@ class Mock(Real):
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'en,zh-CN;q=0.9,zh;q=0.8',
             'Connection': 'keep-alive',
-            'Content-Length': 0,
+            'Content-Length': '0',
             'Host': 'mncg.10jqka.com.cn',
             'Origin': 'https://mncg.10jqka.com.cn',
             'Referer': 'https://mncg.10jqka.com.cn/cgiwt/index/index',
