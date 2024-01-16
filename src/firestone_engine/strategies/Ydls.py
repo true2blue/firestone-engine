@@ -7,7 +7,7 @@ class Ydls(Basic):
 
     _logger = logging.getLogger(__name__)
 
-    _MIN_TIME_PERIOD_LENGTH = 15
+    _MIN_TIME_PERIOD_LENGTH = 7
 
 
     def match_data(self):
