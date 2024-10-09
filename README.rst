@@ -8,7 +8,7 @@ The strategy calculate engine
 Prerequisite
 
 Python 3.6.8
-Mongodb 4.0.28
+Mongodb 4.0.28 enterprise
 
 
 Description
