@@ -39,6 +39,7 @@ class Real(object):
         self.data_db = self.data_client[Real._DATA_DB]
         self.init_cols()
         self.init_Config()
+        
 
 
     def init_cols(self):
@@ -257,10 +258,10 @@ class Real(object):
             if op == 'sell':
                 postData['gddm'] = self.config['gddm']
             url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
-            response = requests.post(url,data=postData,headers=self.__header)
-            text = self.unzip_data(response.content)
-            Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, text))
-            result = json.loads(text)
+            response = requests.post(url,data=postData,headers=self.__header, verify=False)
+            # text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, response.text))
+            result = json.loads(response.text)
             if(result['Status'] == 0):
                 op_cn = '买入' if op == 'buy' else '卖出'
                 message = '订单提交: 在{},以{}{}[{}] {}股'.format(datetime.now(), price, op_cn, code, volume)
@@ -302,12 +303,12 @@ class Real(object):
         }
         try:   
             url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
-            response = requests.post(url,data=postData,headers=self.__header)
-            text = self.unzip_data(response.content)
-            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, text))
-            if text.find('撤单委托已提交') >= 0:
+            response = requests.post(url,data=postData,headers=self.__header, verify=False)
+            # text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
+            if response.text.find('撤单委托已提交') >= 0:
                 return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
-            {'state' : Constants.STATE[3], 'result' : text}
+            {'state' : Constants.STATE[3], 'result' : response.text}
         except Exception as e:
                 Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
                 return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
@@ -337,10 +338,10 @@ class Real(object):
                 'dwc': ''
             }
             url = f'https://jy.xzsec.com/Search/GetDealData?validatekey={self.__validatekey}'
-            response = requests.post(url,data=postData,headers=self.__header)
-            text = self.unzip_data(response.content)
-            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, text))
-            result = json.loads(text)
+            response = requests.post(url,data=postData,headers=self.__header, verify=False)
+            # text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, response.text))
+            result = json.loads(response.text)
             if(result['Status'] == 0):
                 orders = result['Data']
                 if(orders is not None and len(orders) > 0):
@@ -377,7 +378,7 @@ class Real(object):
     def close(self):
         self.client.close()
         
-    def unzip_data(content):  
+    def unzip_data(self, content):  
         with gzip.GzipFile(fileobj=io.BytesIO(content)) as gz:
             data = gz.read().decode('utf-8')
             return data
