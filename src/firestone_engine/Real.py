@@ -15,6 +15,8 @@ from .strategies.BatchYdls import BatchYdls
 from .strategies.PPT0 import PPT0
 import requests
 import json
+import gzip
+import io
 
 class Real(object):
 
@@ -256,8 +258,9 @@ class Real(object):
                 postData['gddm'] = self.config['gddm']
             url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
-            Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, response.text))
-            result = json.loads(response.text)
+            text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {}, code = {}, price = {}, volume = {}, op = {}, submit order get response = {}'.format(self.tradeId, code, price, volume, op, text))
+            result = json.loads(text)
             if(result['Status'] == 0):
                 op_cn = '买入' if op == 'buy' else '卖出'
                 message = '订单提交: 在{},以{}{}[{}] {}股'.format(datetime.now(), price, op_cn, code, volume)
@@ -300,10 +303,11 @@ class Real(object):
         try:   
             url = f'https://jy.xzsec.com/Trade/RevokeOrders?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
-            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, response.text))
-            if response.text.find('撤单委托已提交') >= 0:
+            text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {} htbh = {} cancel delegate get response = {}'.format(self.tradeId, htbh, text))
+            if text.find('撤单委托已提交') >= 0:
                 return {'state' : Constants.STATE[0], 'result' : '合同[{}]已撤销'.format(htbh)}
-            {'state' : Constants.STATE[3], 'result' : response.text}
+            {'state' : Constants.STATE[3], 'result' : text}
         except Exception as e:
                 Real._logger.error('can deligate [{}] faield, e = {}'.format(htbh, e))
                 return {'state' : Constants.STATE[3], 'result' : '合同[{}]撤销失败，请检查配置'.format(htbh)}   
@@ -334,8 +338,9 @@ class Real(object):
             }
             url = f'https://jy.xzsec.com/Search/GetDealData?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header)
-            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, response.text))
-            result = json.loads(response.text)
+            text = self.unzip_data(response.content)
+            Real._logger.info('real tradeId = {} htbh = {} query chengjiao, get response = {}'.format(self.tradeId, htbh, text))
+            result = json.loads(text)
             if(result['Status'] == 0):
                 orders = result['Data']
                 if(orders is not None and len(orders) > 0):
@@ -371,3 +376,8 @@ class Real(object):
 
     def close(self):
         self.client.close()
+        
+    def unzip_data(content):  
+        with gzip.GzipFile(fileobj=io.BytesIO(content)) as gz:
+            data = gz.read().decode('utf-8')
+            return data
