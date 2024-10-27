@@ -139,9 +139,9 @@ class DFCFDataLoader(object):
         
         
     def map_code(self, code):
-        if code == Constants.INDEX[0] or code.startswith('6'):
+        if code == Constants.INDEX[0] or code.startswith('6') or code.startswith('5'):
             return f'1.{code}'
-        elif code == Constants.INDEX[5] or code.startswith('0') or code.startswith('3'):
+        elif code == Constants.INDEX[5] or code.startswith('0') or code.startswith('3') or code.startswith('1'):
             return f'0.{code}'
         return None
     

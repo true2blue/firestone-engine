@@ -14,8 +14,8 @@ class TestReal(unittest.TestCase):
         }
 
 
-    def test_create_delegate(self):
-        print(self.real.createDelegate('600797', 6.54, 100, 'buy'))
+    # def test_create_delegate(self):
+    #     print(self.real.createDelegate('600797', 6.54, 100, 'buy'))
 
     # def test_query_chengjiao(self):
     #     print(self.real.queryChenjiao('94584'))

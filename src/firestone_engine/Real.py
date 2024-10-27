@@ -246,7 +246,7 @@ class Real(object):
             self.load_config()
             tradeType = 'Buy' if op == 'buy' else 'Sell'
             self.__header['Referer'] = f'https://jy.xzsec.com/Trade/{tradeType}'
-            market = 'HA' if code.startswith('6') else 'SA'
+            market = 'HA' if (code.startswith('6') or code.startswith('5')) else 'SA'
             postData = {
                 'stockCode': code,
                 'price': price,
