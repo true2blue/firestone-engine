@@ -145,8 +145,10 @@ class DFCFDataLoader(object):
             return f'0.{code}'
         return None
     
-    def divide_100(self, value):
+    def divide_100(self, code, value):
         if isinstance(value, int):
+            if code.startswith('1') or code.startswith('5'):
+                return value / 1000
             return value / 100
         return value
     
@@ -163,13 +165,13 @@ class DFCFDataLoader(object):
             previous_data = self.previous_data[code] if code in self.previous_data else None
             formated_jsons = {
                 'name' : self.get_value('f14', data, 'name', previous_data),
-                'open' : self.divide_100(self.get_value('f17', data, 'open', previous_data)),
-                'pre_close' : self.divide_100(self.get_value('f18', data, 'pre_close', previous_data)),
-                'price' : self.divide_100(self.get_value('f2', data, 'price', previous_data)),
-                'high' : self.divide_100(self.get_value('f15', data, 'high', previous_data)),
-                'low' : self.divide_100(self.get_value('f16', data, 'low', previous_data)),
-                'bid' : self.divide_100(self.get_value('f31', data, 'bid', previous_data)),
-                'ask' : self.divide_100(self.get_value('f32', data, 'ask', previous_data)),
+                'open' : self.divide_100(code, self.get_value('f17', data, 'open', previous_data)),
+                'pre_close' : self.divide_100(code, self.get_value('f18', data, 'pre_close', previous_data)),
+                'price' : self.divide_100(code, self.get_value('f2', data, 'price', previous_data)),
+                'high' : self.divide_100(code, self.get_value('f15', data, 'high', previous_data)),
+                'low' : self.divide_100(code, self.get_value('f16', data, 'low', previous_data)),
+                'bid' : self.divide_100(code, self.get_value('f31', data, 'bid', previous_data)),
+                'ask' : self.divide_100(code, self.get_value('f32', data, 'ask', previous_data)),
                 'volume' : self.get_value('f5', data, 'volume', previous_data),
                 'amount' : self.get_value('f6', data, 'amount', previous_data),
                 'date' : datetime.now().strftime('%Y-%m-%d'),
