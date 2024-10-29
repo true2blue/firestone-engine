@@ -211,7 +211,10 @@ class Real(object):
     def createOrder(self):
         data = self.get_data()[-1]
         code = self.get_code()
-        price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
+        if code.startswith('1') or code.startswith('5'):
+            price = float("{:.3f}".format(float(data['pre_close']) * 1.1))
+        else:
+            price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
         Real._logger.info(f'start create order for code = {code}, time = {data["time"]}')
         op = self.get_op()
         if(op == 'buy'):
