@@ -211,13 +211,13 @@ class Real(object):
     def createOrder(self):
         data = self.get_data()[-1]
         code = self.get_code()
-        if code.startswith('1') or code.startswith('5'):
-            price = float("{:.3f}".format(float(data['pre_close']) * 1.1))
-        else:
-            price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
         Real._logger.info(f'start create order for code = {code}, time = {data["time"]}')
         op = self.get_op()
         if(op == 'buy'):
+            if code.startswith('1') or code.startswith('5'):
+                price = float("{:.3f}".format(float(data['pre_close']) * 1.1))
+            else:
+                price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
             amount = float(self.trade['params']['volume'])
             if self.is_T0():
                 volume = amount
@@ -228,6 +228,10 @@ class Real(object):
             else:
                 result = {'result' : '买入总额不足100股', 'state' : Constants.STATE[3]}
         else:
+            if code.startswith('1') or code.startswith('5'):
+                price = float("{:.3f}".format(float(data['price']) - 0.001))
+            else:
+                price = float("{:.2f}".format(float(data['price']) - 0.01))
             volume = int(self.trade['params']['volume'])
             result = self.createDelegate(code, price, volume, op)
         self.updateTrade(result)
