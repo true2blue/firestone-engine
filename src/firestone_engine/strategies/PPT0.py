@@ -59,7 +59,7 @@ class PPT0(Base):
         low_limit = Utils.round_dec(pre_close * 0.9)
         cb = float(self.trade['params']['cb'])
         buy_below_cb_percent = float(self.trade['params']['buy_below_cb_percent'])
-        drop_from_close_percent = (close - cb) / pre_close * 100
+        drop_from_close_percent = (cb - close) / pre_close * 100
         if drop_from_close_percent < buy_below_cb_percent:
             return False
         if hasattr(self, 'start_monitor') or (drop_percent_from_open < 0 and abs(drop_percent_from_open) >= start_buy_line) or (low_limit >= target_p and low_limit >= Decimal(close) and self.trade['params']['buy_on_low_limit'] == '1'):
