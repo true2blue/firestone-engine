@@ -487,6 +487,8 @@ db.mocktrades.insertMany([{
         "force_sell_time" : "14:50:00",
         "start_buy_line" : "0.3",
         "buy_on_low_limit" : "1",
+        "cb" : "27.35",
+        "buy_below_cb_percent" : "10",
         "min_rebound" : "0.5",
         "max_rebound" : "3.0",
         "stop_win" : "1.0",

@@ -57,6 +57,11 @@ class PPT0(Base):
         start_buy_line = float(self.trade['params']['start_buy_line'])
         target_p = Utils.round_dec(start_buy_line * -1 / 100 * pre_close + open_p)
         low_limit = Utils.round_dec(pre_close * 0.9)
+        cb = float(self.trade['params']['cb'])
+        buy_below_cb_percent = float(self.trade['params']['buy_below_cb_percent'])
+        drop_from_close_percent = (close - cb) / pre_close * 100
+        if drop_from_close_percent < buy_below_cb_percent:
+            return False
         if hasattr(self, 'start_monitor') or (drop_percent_from_open < 0 and abs(drop_percent_from_open) >= start_buy_line) or (low_limit >= target_p and low_limit >= Decimal(close) and self.trade['params']['buy_on_low_limit'] == '1'):
             PPT0._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, PPT0 matched buy_shape, open_p = {open_p}, target_p = {target_p}, low_limit = {low_limit}, start_buy_line= {start_buy_line}, close={close}, pre_close={pre_close}')
             self.start_monitor = True
