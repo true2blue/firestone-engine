@@ -54,8 +54,8 @@ class Trader(object):
             #done
             elif (result['state'] == Constants.STATE[4]):
                 self.is_finsih_flag = True
-            #cancel or T0 buy done    
-            elif (result['state'] == Constants.STATE[0] or result['state'] == Constants.STATE[6]):
+            #cancel or T0 buy done or Multi Buy   
+            elif (result['state'] == Constants.STATE[0] or result['state'] == Constants.STATE[6] or result['state'] == Constants.STATE[7]):
                 if 'htbh' in result and result['htbh'] != '':
                     htbh = result['htbh']
                     for i, hour in enumerate(self.hours):

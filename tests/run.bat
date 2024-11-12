@@ -19,4 +19,5 @@ REM pipenv run python -m unittest tests/TestMock.py
 REM pipenv run python -m unittest tests/TestDataloader.py
 REM pipenv run python -m unittest tests/strategies/TestConceptPick.py
 REM pipenv run python -m unittest tests/strategies/TestBatchYdls.py
-pipenv run python -m unittest tests/strategies/TestPPT0New.py
+REM pipenv run python -m unittest tests/strategies/TestPPT0New.py
+pipenv run python -m unittest tests/strategies/TestMultiBuy.py

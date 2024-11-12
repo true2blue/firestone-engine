@@ -82,7 +82,7 @@ class Real(object):
             htbh = self.trade['order']['result']['data']['htbh']
             self.updateTrade({'order' : {}})
             return {'state' : self.trade['state'], 'htbh' : htbh}
-        if(self.trade['state'] == Constants.STATE[6] and 'order' in self.trade and len(self.trade['order']) > 0):
+        if((self.trade['state'] == Constants.STATE[6] or self.trade['state'] == Constants.STATE[7]) and 'order' in self.trade and len(self.trade['order']) > 0):
             htbh = ''
             if 'Wtbh' in self.trade['order']:
                 htbh = self.trade['order']['Wtbh']
@@ -90,10 +90,10 @@ class Real(object):
                 htbh = self.trade['order']['d_2135']
             self.updateTrade({'order' : {}})
             return {'state' : self.trade['state'], 'htbh' : htbh}
-        if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6]):
+        if(self.trade['state'] != Constants.STATE[0] and self.trade['state'] != Constants.STATE[6] and self.trade['state'] != Constants.STATE[7]):
             return {'state' : self.trade['state']}
         if(self.strategy.need_create_order()):
-            if(self.trade['result'] is not None and self.trade['result'] != '无' and self.trade['result'] != '' and self.trade['state'] != Constants.STATE[6]):
+            if(self.trade['result'] is not None and self.trade['result'] != '无' and self.trade['result'] != '' and self.trade['state'] != Constants.STATE[6] and self.trade['state'] != Constants.STATE[7]):
                 self.updateTrade({'result' : '无'})
             self.load_data()
             if(len(self.data['data']) == 0):
@@ -240,6 +240,9 @@ class Real(object):
     
     def is_T0(self):
         return str(self.strategy.__class__).find('PPT0') >= 0
+    
+    def is_MultiBuy(self):
+        return str(self.strategy.__class__).find('MultiBuy') >= 0
 
 
     def load_config(self):
@@ -326,7 +329,7 @@ class Real(object):
 
 
     def check_chengjiao(self, htbh):
-        if(self.trade['state'] == Constants.STATE[4] or self.trade['state'] == Constants.STATE[6]):
+        if(self.trade['state'] == Constants.STATE[4] or self.trade['state'] == Constants.STATE[6] or self.trade['state'] == Constants.STATE[7]):
             return
         update = self.queryChenjiao(htbh)
         if len(update) == 0:
@@ -357,7 +360,9 @@ class Real(object):
                             message = '以{}成交{}股,合同编号{}'.format(order['Cjje'], order['Cjsl'], htbh)
                             state = Constants.STATE[4]
                             if self.is_T0() and self.strategy.op == 'buy':
-                                state = Constants.STATE[6]          
+                                state = Constants.STATE[6]
+                            elif self.is_MultiBuy() and not self.strategy.all_buy_done():
+                                state = Constants.STATE[7]         
                             return {'state' : state, 'result' : message, 'order' : order}
                 if 'auto_cancel' in self.trade['params'] and self.trade['params']['auto_cancel'] == '1':
                     return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}

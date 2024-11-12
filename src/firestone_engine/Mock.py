@@ -84,7 +84,9 @@ class Mock(Real):
                             message = '以{}成交{}股,合同编号{}'.format(order['d_2129'], order['d_2128'], htbh)
                             state = Constants.STATE[4]
                             if self.is_T0() and self.strategy.op == 'buy':
-                                state = Constants.STATE[6]          
+                                state = Constants.STATE[6]
+                            elif self.is_MultiBuy() and not self.strategy.all_buy_done():
+                                state = Constants.STATE[7]          
                             return {'state' : state, 'result' : message, 'order' : order}
                 if 'auto_cancel' in self.trade['params'] and self.trade['params']['auto_cancel'] == '1':
                     return {'state' : Constants.STATE[5], 'result' : '超时未成交，自动取消订单'}
