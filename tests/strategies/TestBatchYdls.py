@@ -25,7 +25,7 @@ class TestBatchYdls(unittest.TestCase):
         }
         self.index = {
             'sh' : list(self.db_data['sh-2019-10-30'].find()),
-            'cyb' : list(self.db_data['cyb-2019-12-10'].find())
+            '399006' : list(self.db_data['399006-2019-12-10'].find())
         }
 
 
@@ -36,13 +36,13 @@ class TestBatchYdls(unittest.TestCase):
         }
         index = {
             'sh' : [],
-            'cyb' : []
+            '399006' : []
         }
         for i in range(4479):
             data['300448'].append(self.data['300448'][i])
             data['000993'].append(self.data['000993'][i])
             index['sh'].append(self.index['sh'][i])
-            index['cyb'].append(self.index['cyb'][i])
+            index['399006'].append(self.index['399006'][i])
             if(self.by.run(self.trade, self.config, self.db, data, index)):
                 break
         self.assertEqual(data['300448'][-1]['time'], '09:38:39')

@@ -4,4 +4,4 @@ db.getCollection(`000993-${todayStr}`).drop();
 db.getCollection(`300694-${todayStr}`).drop();
 db.getCollection(`000793-${todayStr}`).drop();
 db.getCollection(`sh-${todayStr}`).drop();
-db.getCollection(`cyb-${todayStr}`).drop();
+db.getCollection(`399006-${todayStr}`).drop();

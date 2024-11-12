@@ -219,7 +219,7 @@ class Real(object):
             else:
                 price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
             amount = float(self.trade['params']['volume'])
-            if self.is_T0():
+            if self.is_T0() or self.is_MultiBuy():
                 volume = amount
             else:
                 volume = int(amount / price / 100) * 100

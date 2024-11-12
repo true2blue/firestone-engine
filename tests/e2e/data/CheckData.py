@@ -11,7 +11,7 @@ class CheckData(unittest.TestCase):
     def testData(self):
         today = datetime.now()
         today = '{}-{}-{}'.format(today.year,('0' + str(today.month))[-2:],('0' + str(today.day))[-2:])
-        for code in ['000993', '300694', '000793' , 'sh', 'cyb']:
+        for code in ['000993', '300694', '000793' , 'sh', '399006']:
             data = self.db[code + '-' + today].find()
             self.assertGreaterEqual(len(list(data)), 1)
 

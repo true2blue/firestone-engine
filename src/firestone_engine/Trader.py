@@ -63,7 +63,7 @@ class Trader(object):
                         if job is not None:
                             self.scheduler.remove_job(f'check_chengjiao_{htbh}_{i}')
         except Exception as e:
-            Trader._logger.error(e)
+            Trader._logger.error(e, exc_info=True)
 
 
     def check_chengjiao(self, htbh):

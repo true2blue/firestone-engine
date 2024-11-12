@@ -10,7 +10,7 @@ class TestPPT0(TestBase, unittest.TestCase):
             'tradeId' : '5db7e0a555609bb27252edb1',
             'configId' : '5db796e4429e4baab72826a0',
             'data_col' : '300448-2019-12-10',
-            'index_col' : 'cyb-2019-12-10'
+            'index_col' : '399006-2019-12-10'
         }
         
         
