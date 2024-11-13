@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.triggers.cron import CronTrigger
 from .Real import Real
 from .Mock import Mock
@@ -19,7 +20,10 @@ class Trader(object):
         self.tradeId = tradeId
         self.is_mock = is_mock
         self.is_finsih_flag = False
-        self.scheduler = BackgroundScheduler()
+        executors = {
+            'default': ThreadPoolExecutor(20)  # Increase the thread pool size to 20
+        }
+        self.scheduler = BackgroundScheduler(executors=executors)
         end_date = datetime.now() + timedelta(days = 1)
         self.end_date = '{}-{}-{}'.format(end_date.year,('0' + str(end_date.month))[-2:],('0' + str(end_date.day))[-2:])
         for i, hour in enumerate(hours):
