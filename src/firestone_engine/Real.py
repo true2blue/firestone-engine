@@ -13,6 +13,7 @@ from .strategies.BasicSell import BasicSell
 from .strategies.ConceptPick import ConceptPick
 from .strategies.BatchYdls import BatchYdls
 from .strategies.PPT0 import PPT0
+from .strategies.MultiBuy import MultiBuy
 import requests
 import json
 import gzip
@@ -382,9 +383,10 @@ class Real(object):
         Real._logger.info('tradeId = {} load startegy = {}'.format(self.tradeId, self.strategyMeta))
         class_name = self.strategyMeta['url']
         strategyClass = locate('firestone_engine.strategies.{}.{}'.format(class_name, class_name))
-        self.strategy = strategyClass()
-        if(self.strategy is None):
-            Real._logger.error(f'failed to load strategy {class_name}')
+        try:
+            self.strategy = strategyClass()
+        except Exception as e:
+            Real._logger.error(f'failed to load strategy {class_name}', exc_info=True)
 
 
     def close(self):
