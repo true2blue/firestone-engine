@@ -35,7 +35,6 @@ class MultiBuy(Base):
         if self.pre_buy is None:
             return False
         close = float(self.dataLastRow['price'])
-        open = float(self.dataLastRow['open'])
         pre_close = float(self.dataLastRow['pre_close'])
         percent = (self.pre_buy - close) / pre_close * 100
         drop_open_percent = float(self.trade['params']['drop_open_percent']) * self.buy_count
