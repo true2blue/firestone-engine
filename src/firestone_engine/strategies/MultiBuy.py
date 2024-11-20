@@ -25,16 +25,19 @@ class MultiBuy(Base):
         percent = (close - pre_close) / pre_close * 100
         limit_open_percent = float(self.trade['params']['limit_open_percent'])
         if percent < limit_open_percent:
+            self.pre_buy = close
             MultiBuy._logger.info(f'match_first_buy open_percent = {percent}, limit_open_percent = {limit_open_percent}')
             return True
         return False
     
 
     def match_next_buy(self):
+        if self.pre_buy is None:
+            return False
         close = float(self.dataLastRow['price'])
         open = float(self.dataLastRow['open'])
         pre_close = float(self.dataLastRow['pre_close'])
-        percent = (open - close) / pre_close * 100
+        percent = (self.pre_buy - close) / pre_close * 100
         drop_open_percent = float(self.trade['params']['drop_open_percent']) * self.buy_count
         if percent > drop_open_percent:
             MultiBuy._logger.info(f'match_next_buy {self.buy_count} drop percent from open = {percent}, drop_open_percent = {drop_open_percent}')
