@@ -11,7 +11,7 @@ class CookieManager(object):
         self.db = self.client[os.environ['FR_DB']]
 
     def run(self):
-        cj = browser_cookie3.chrome(domain_name='github.com')
+        cj = browser_cookie3.firefox(domain_name='jy.xzsec.com')
         cookie_str = ''
         for cookie in cj:
             cookie_str += f"{cookie.name}={cookie.value}; "
