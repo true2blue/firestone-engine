@@ -6,16 +6,16 @@ class TestReal(unittest.TestCase):
 
 
     def setUp(self):
-        self.real = Real('671ddee64f592501c8d5e82b', date='2024-10-27')
+        self.real = Real('67b1b90eacb6cd2a2445a27a', date='2025-02-25')
         self.real.data = {
             'data' : [{
-                'name' : '人工智能ETF'
+                'name' : '储能电池ETF'
             }],
         }
 
 
     def test_create_delegate(self):
-        print(self.real.createDelegate('159819', 0.97, 100, 'buy'))
+        print(self.real.createDelegate('159566', 1.406, 100, 'buy'))
 
     # def test_query_chengjiao(self):
     #     print(self.real.queryChenjiao('14186'))
@@ -25,7 +25,7 @@ class TestReal(unittest.TestCase):
 
 if __name__ == "__main__":
     #     # 5678 is the default attach port in the VS Code debug configurations
-    print("start debug on port 5678")
-    ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-    ptvsd.wait_for_attach()
+    # print("start debug on port 5678")
+    # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    # ptvsd.wait_for_attach()
     unittest.main()

@@ -1,4 +1,5 @@
 setx FR_DB firestone-test
+set FR_DB=firestone-test
 mongo 127.0.0.1/firestone-test --eval "db.dropDatabase(); db.getSiblingDB('firestone-test');" "c:/aqua/firestone-engine/tests/init.js"
 mongoimport -d firestone-test -c codes "tests\concept\codes.json"
 mongoimport -d firestone-test -c concepts "tests\concept\concepts.json"

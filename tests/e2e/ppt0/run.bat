@@ -1,4 +1,5 @@
 setx FR_DB firestone-test
+set FR_DB=firestone-test
 mongo 127.0.0.1/firestone-test --eval "db.dropDatabase(); db.getSiblingDB('firestone-test');" "c:/aqua/firestone-engine/tests/e2e/ppt0/init.js"
 mongo 127.0.0.1:27018/firestone-data --eval "db.getCollection('300448-2019-12-10').drop(); db.getCollection('399006-2019-12-10').drop();" "c:/aqua/firestone-engine/tests/e2e/ppt0/data.js"
 mongo 127.0.0.1:27018/firestone-data --eval "db.getCollection('300448-2019-12-10-m').drop(); db.getCollection('399006-2019-12-10-m').drop();"
