@@ -39,7 +39,8 @@ db.strategies.insertMany([{
             "ratio_stock" : 7,
             "ratio_index" : 3
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 }]);
 db.mocktrades.insertMany([{
@@ -69,6 +70,7 @@ db.mocktrades.insertMany([{
             "ratio_stock" : 7,
             "ratio_index" : 3
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 }]);

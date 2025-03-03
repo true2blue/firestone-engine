@@ -214,11 +214,12 @@ class Real(object):
         code = self.get_code()
         Real._logger.info(f'start create order for code = {code}, time = {data["time"]}')
         op = self.get_op()
+        price = float(data['price']) + (0.0 if 'delta' not in self.trade['params'] else float(self.trade['params']['delta']))
+        if code.startswith('1') or code.startswith('5'):
+            price = float("{:.3f}".format(price))
+        else:
+            price = float("{:.2f}".format(price))
         if(op == 'buy'):
-            if code.startswith('1') or code.startswith('5'):
-                price = float("{:.3f}".format(float(data['pre_close']) * 1.1))
-            else:
-                price = float("{:.2f}".format(float(data['pre_close']) * 1.1))
             amount = float(self.trade['params']['volume'])
             if self.is_T0() or self.is_MultiBuy():
                 volume = amount
@@ -229,10 +230,6 @@ class Real(object):
             else:
                 result = {'result' : '买入总额不足100股', 'state' : Constants.STATE[3]}
         else:
-            if code.startswith('1') or code.startswith('5'):
-                price = float("{:.3f}".format(float(data['price']) - 0.001))
-            else:
-                price = float("{:.2f}".format(float(data['price']) - 0.01))
             volume = int(self.trade['params']['volume'])
             result = self.createDelegate(code, price, volume, op)
         self.updateTrade(result)
