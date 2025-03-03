@@ -267,7 +267,10 @@ class Real(object):
                 'market': market
             }
             if op == 'sell':
-                postData['gddm'] = self.config['gddm']
+                if (code.startswith('6') or code.startswith('5')):
+                    postData['hgddm'] = self.config['hgddm']
+                else:
+                    postData['gddm'] = self.config['gddm']
             url = f'https://jy.xzsec.com/Trade/SubmitTradeV2?validatekey={self.__validatekey}'
             response = requests.post(url,data=postData,headers=self.__header, verify=False)
             # text = self.unzip_data(response.content)
