@@ -50,7 +50,8 @@ db.strategies.insertMany([{
             "time" : "1",
             "amount" : "200"
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 }]);
 db.mocktrades.insertMany([{
@@ -86,6 +87,7 @@ db.mocktrades.insertMany([{
             "time" : "1",
             "amount" : "100"
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 }]);

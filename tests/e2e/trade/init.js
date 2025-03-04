@@ -36,7 +36,8 @@ db.strategies.insertMany([{
             "low" : "-0.5",
             "high" : "2.5"
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 },{
     "name" : "打板策略",
@@ -69,6 +70,7 @@ db.mocktrades.insertMany([{
             "low" : "0.0",
             "high" : "0.0"
         },
-        "volume" : 1000
+        "volume" : 1000,
+        "delta" : 0
     }
 }]);
