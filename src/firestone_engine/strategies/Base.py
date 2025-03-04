@@ -67,3 +67,10 @@ class Base(object):
         a1_p = Decimal(last_row['ask'])
         return price >= a1_p
     
+
+    def is_etf(self):
+        code = self.dataLastRow["code"]
+        return code.startswith('1') or code.startswith('5')
+    
+    def precise(self):
+        return 3 if self.is_etf() else 2

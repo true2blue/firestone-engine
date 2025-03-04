@@ -27,7 +27,7 @@ class BasicSell(Base):
     def match_sell_on_zt(self):
         price = Decimal(self.dataLastRow['price'])
         pre_close = float(self.dataLastRow['pre_close'])
-        if(abs(price - Utils.round_dec(pre_close * 1.1)) < Base.SMALL_NUMBER):
+        if(abs(price - Utils.round_dec(pre_close * 1.1, self.precise())) < Base.SMALL_NUMBER):
             if(self.trade['params']['sell_on_zt'] == '1'):
                 return 1
             return 0    
