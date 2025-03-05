@@ -80,7 +80,7 @@ db.mocktrades.insertMany([{
         "max_rebound" : "3.0",
         "stop_win" : "1.0",
         "drop_from_high" : "0.5",
-        "drop_percent" : "1.0",
+        "drop_percent" : "0.1",
         "speed" : {
             "time_2" : "1",
             "percent" : "0.5"
