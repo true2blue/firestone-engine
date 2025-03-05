@@ -54,7 +54,7 @@ class PPT0(Base):
         open_p = float(self.dataLastRow['open'])
         pre_close = float(self.dataLastRow['pre_close'])
         drop_percent_from_open = (close - open_p) / pre_close * 100
-        percent = self.get_percent()
+        percent = self.get_current_data_percent()
         start_buy_line = float(self.trade['params']['start_buy_line'])
         target_p = Utils.round_dec(start_buy_line * -1 / 100 * pre_close + open_p, self.precise())
         low_limit = Utils.round_dec(pre_close * 0.9, self.precise())
