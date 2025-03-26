@@ -6,7 +6,7 @@ class TestReal(unittest.TestCase):
 
 
     def setUp(self):
-        self.real = Real('67b1b90eacb6cd2a2445a27a', date='2025-02-25')
+        self.real = Real('67c836fe3c3a801ba43b0750', date='2025-02-25')
         self.real.data = {
             'data' : [{
                 'name' : '储能电池ETF'
