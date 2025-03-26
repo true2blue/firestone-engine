@@ -518,19 +518,19 @@ db.mocktrades.insertMany([{
         "start_buy_line" : "0.3",
         "buy_on_low_limit" : "1",
         "cb" : "28",
-        "buy_below_cb_percent" : "1",
-        "min_rebound" : "0.5",
+        "buy_below_cb_percent" : "0.3",
+        "min_rebound" : "0.2",
         "max_rebound" : "3.0",
-        "stop_win" : "1.0",
-        "drop_from_high" : "0.5",
+        "stop_win" : "0.5",
+        "drop_from_high" : "0.2",
         "drop_percent" : "1.0",
         "speed" : {
             "time_2" : "1",
-            "percent" : "0.5"
+            "percent" : "0"
         },
         "money" : {
             "time" : "1",
-            "amount" : "100"
+            "amount" : "0"
         },
         "volume" : 1000,
         "delta" : 0

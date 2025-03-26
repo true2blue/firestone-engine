@@ -4,12 +4,18 @@ from datetime import datetime
 from decimal import Decimal
 from firestone_engine.Utils import Utils
 from ..Constants import Constants
+import numpy as np
 
 class PPT0(Base):
     
     _logger = logging.getLogger(__name__)
     
     _MIN_TIME_PERIOD_LENGTH = 15
+
+    _x = np.array([-10,  -9,  -8,  -7,   -6,  -5,   -4,  -3, -2,   -1,   0,   1, 2,   3, 4,   5, 6,   7, 8,   9, 10])
+    _y = np.array([  0, 0.1, 0.2, 0.3, 0.35, 0.4, 0.45, 0.5,  1,  1.2, 1.5, 1.8, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,  6])
+
+    _coefficients = np.polyfit(_x, _y, 3)
 
 
     def matchCondition(self):
@@ -47,6 +53,14 @@ class PPT0(Base):
         if flag:
             self.buy_price = float(self.dataLastRow['price'])
         return flag
+    
+    def get_auto_determine_buy_percent(self, open_percent):
+        poly = np.poly1d(PPT0._coefficients)
+        drop_percent = float(poly(open_percent))
+        return open_percent - drop_percent
+    
+    def is_enable_auto(self):
+        return 'auto' in self.trade['params'] and self.trade['params']['auto'] == '1'
 
     
     def match_shape(self):
@@ -61,11 +75,11 @@ class PPT0(Base):
         cb = float(self.trade['params']['cb'])
         buy_below_cb_percent = float(self.trade['params']['buy_below_cb_percent'])
         drop_from_close_percent = (cb - close) / cb * 100
-        if drop_from_close_percent < buy_below_cb_percent:
+        if not self.is_enable_auto() and drop_from_close_percent < buy_below_cb_percent:
             return False
-        if percent > float(self.trade['params']['drop_percent']) * -1:
+        if not self.is_enable_auto() and percent > float(self.trade['params']['drop_percent']) * -1:
             return False
-        if hasattr(self, 'start_monitor') or (drop_percent_from_open < 0 and abs(drop_percent_from_open) >= start_buy_line) or (low_limit >= target_p and low_limit >= Decimal(close) and self.trade['params']['buy_on_low_limit'] == '1'):
+        if hasattr(self, 'start_monitor') or (self.is_enable_auto() and percent < self.get_auto_determine_buy_percent()) or (drop_percent_from_open < 0 and abs(drop_percent_from_open) >= start_buy_line) or (low_limit >= target_p and low_limit >= Decimal(close) and self.trade['params']['buy_on_low_limit'] == '1'):
             PPT0._logger.info(f'TradeId = {self.trade["_id"]}, Code={self.dataLastRow["code"]}, PPT0 matched buy_shape, open_p = {open_p}, target_p = {target_p}, low_limit = {low_limit}, start_buy_line= {start_buy_line}, close={close}, pre_close={pre_close}')
             self.start_monitor = True
             low = float(self.dataLastRow['low'])
