@@ -13,8 +13,8 @@ class TestBase(object):
         self.DB_DATA = self.data_client['firestone-data']
         self.trade = self.DB['mocktrades'].find_one({"_id" : ObjectId(self.test_config['tradeId'])})
         self.config = self.DB['configmocks'].find_one({"_id" : ObjectId(self.test_config['configId'])})
-        self.data = list(self.DB_DATA[self.test_config['data_col']].find())
-        self.index = list(self.DB_DATA[self.test_config['index_col']].find())
+        self.data = list(self.DB_DATA[self.test_config['data_col']].find().sort('time' , 1))
+        self.index = list(self.DB_DATA[self.test_config['index_col']].find().sort('time' , 1))
 
 
     def get_test_config(self):
