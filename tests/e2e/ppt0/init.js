@@ -71,6 +71,7 @@ db.mocktrades.insertMany([{
             "start" : "09:30",
             "end" : "15:00"
         },
+        "auto" : "1",
         "force_sell_time" : "14:50:00",
         "start_buy_line" : "0.7",
         "buy_on_low_limit" : "1",
