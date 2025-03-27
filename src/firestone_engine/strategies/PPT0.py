@@ -75,8 +75,10 @@ class PPT0(Base):
         low_limit = Utils.round_dec(pre_close * 0.9, self.precise())
         cb = float(self.trade['params']['cb'])
         buy_below_cb_percent = float(self.trade['params']['buy_below_cb_percent'])
-        drop_from_close_percent = (cb - close) / cb * 100
-        if not self.is_enable_auto() and drop_from_close_percent < buy_below_cb_percent:
+        drop_from_close_percent = None
+        if cb != 0.0:
+            drop_from_close_percent = (cb - close) / cb * 100
+        if not self.is_enable_auto() and drop_from_close_percent is not None and drop_from_close_percent < buy_below_cb_percent:
             return False
         if not self.is_enable_auto() and percent > float(self.trade['params']['drop_percent']) * -1:
             return False
