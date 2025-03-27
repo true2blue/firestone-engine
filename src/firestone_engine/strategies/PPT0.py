@@ -14,8 +14,10 @@ class PPT0(Base):
 
     _x = np.array([-10,  -9,  -8,  -7,   -6,  -5,   -4,  -3, -2,   -1,   0,   1, 2,   3, 4,   5, 6,   7, 8,   9, 10])
     _y = np.array([  0, 0.1, 0.2, 0.3, 0.35, 0.4, 0.45, 0.5,  1,  1.2, 1.5, 1.8, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5,  6])
+    _y1 = np.array([  0,  1,  1,  1, 1.5,   2,  2, 2.5,  2.5,  2.5,   3,   3, 3,  3, 3, 4, 4, 4.5, 5, 5.5,  6])
 
-    _coefficients = np.polyfit(_x, _y, 3)
+    _coefficients = np.polyfit(_x, _y, 15)
+    _coefficients1 = np.polyfit(_x, _y1, 15)
 
 
     def matchCondition(self):
@@ -55,7 +57,8 @@ class PPT0(Base):
         return flag
     
     def get_auto_determine_buy_percent(self, open_percent):
-        poly = np.poly1d(PPT0._coefficients)
+        code = self.dataLastRow["code"]
+        poly = np.poly1d(PPT0._coefficients) if code.startswith('1') or code.startswith('5') else np.poly1d(PPT0._coefficients1)
         drop_percent = float(poly(open_percent))
         return open_percent - drop_percent
     
