@@ -543075,7 +543075,7 @@ db['300448-2019-12-10'].insertMany([
         "real_time" : ISODate("2019-12-10T14:59:06.113Z")
     }
     ]);
-    db['sh-2019-12-10'].insertMany([
+    db['000001-2019-12-10'].insertMany([
     
     {
         "_id" : ObjectId("5db8e7989d5d83832a474143"),

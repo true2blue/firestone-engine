@@ -21,10 +21,10 @@ class TestBatchYdls(unittest.TestCase):
     def load_data(self):
         self.data = {
             '300448' : list(self.db_data['300448-2019-12-10'].find()),
-            '000993' : list(self.db_data['000993-2019-10-30'].find())
+            '000993' : list(self.db_data['000993-2019-12-10'].find())
         }
         self.index = {
-            'sh' : list(self.db_data['sh-2019-10-30'].find()),
+            '000001' : list(self.db_data['000001-2019-12-10'].find()),
             '399006' : list(self.db_data['399006-2019-12-10'].find())
         }
 
@@ -35,13 +35,13 @@ class TestBatchYdls(unittest.TestCase):
             '000993' : []
         }
         index = {
-            'sh' : [],
+            '000001' : [],
             '399006' : []
         }
         for i in range(4479):
             data['300448'].append(self.data['300448'][i])
             data['000993'].append(self.data['000993'][i])
-            index['sh'].append(self.index['sh'][i])
+            index['000001'].append(self.index['000001'][i])
             index['399006'].append(self.index['399006'][i])
             if(self.by.run(self.trade, self.config, self.db, data, index)):
                 break
@@ -55,9 +55,9 @@ class TestBatchYdls(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 
-# # to debug in vscode uncomment this block
-# import ptvsd
-# # 5678 is the default attach port in the VS Code debug configurations
-# print("start debug on port 5678")
-# ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-# ptvsd.wait_for_attach()
+# to debug in vscode uncomment this block
+import ptvsd
+# 5678 is the default attach port in the VS Code debug configurations
+print("start debug on port 5678")
+ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+ptvsd.wait_for_attach()

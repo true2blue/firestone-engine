@@ -1,12 +1,12 @@
 import unittest
 from firestone_engine.Real import Real
-import ptvsd
+# import ptvsd
 
 class TestReal(unittest.TestCase):
 
 
     def setUp(self):
-        self.real = Real('67c836fe3c3a801ba43b0750', date='2025-02-25')
+        self.real = Real('69c77eb79994752984370f2d', date='2025-02-25')
         self.real.data = {
             'data' : [{
                 'name' : '储能电池ETF'
