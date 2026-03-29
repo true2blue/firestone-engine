@@ -6,16 +6,16 @@ class TestReal(unittest.TestCase):
 
 
     def setUp(self):
-        self.real = Real('69c77eb79994752984370f2d', date='2025-02-25')
+        self.real = Real('69c89bed6ec9aa2688e4daf2', date='2026-03-29')
         self.real.data = {
             'data' : [{
-                'name' : '储能电池ETF'
+                'name' : '豪能股份'
             }],
         }
 
 
     def test_create_delegate(self):
-        print(self.real.createDelegate('159566', 1.406, 100, 'buy'))
+        print(self.real.createDelegate('603809', 10.55, 100, 'sell'))
 
     # def test_query_chengjiao(self):
     #     print(self.real.queryChenjiao('14186'))
