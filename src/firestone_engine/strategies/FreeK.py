@@ -19,6 +19,10 @@ class FreeK(Base):
     _logger = logging.getLogger(__name__)
 
     def matchCondition(self):
+        index_percent = self.get_current_index_percent()
+        # check index percent range if configured
+        if not self.match_index():
+            return False
         if not self.match_k_shape():
             return False
         if not self.match_speed():
@@ -27,6 +31,33 @@ class FreeK(Base):
             return False
         FreeK._logger.info("TradeId=%s Code=%s FreeK matched k_shape+speed+voulme_now", self.trade.get("_id"), self.dataLastRow.get("code"))
         return True
+
+    def match_index(self):
+        """Match current index percent against params.index_percent.
+            FreeK's parameters use keys 'min' and 'max' (see tests/init.js).
+            Use Decimal and the values provided in params directly.
+        """
+        params = self.trade.get("params", {})
+        # Only support 'min' and 'max' keys in params['index_percent']
+        if "index_percent" not in params:
+            return True
+
+        ip = params["index_percent"]
+        if "min" not in ip or "max" not in ip:
+            # explicit requirement: only accept when both min and max are present
+            return False
+
+        try:
+            percent = Decimal(str(self.get_current_index_percent()))
+        except Exception:
+            return False
+
+        percent_low = Decimal(str(ip["min"]))
+        percent_high = Decimal(str(ip["max"]))
+        flag = (percent >= percent_low and percent <= percent_high)
+        if flag:
+            FreeK._logger.info('real_time = %s, tradeId = %s, Code = %s, match index, time = %s, percent = %s, low = %s, high = %s', datetime.now(), self.trade.get('_id'), self.indexLastRow.get('code'), self.indexLastRow.get('time'), percent, percent_low, percent_high)
+        return flag
 
     def match_k_shape(self):
         params = self.trade["params"]

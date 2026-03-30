@@ -1,7 +1,7 @@
 setx FR_DB firestone-test
 set FR_DB=firestone-test
-@REM mongo 127.0.0.1/firestone-test --eval "db.dropDatabase(); db.getSiblingDB('firestone-test');" "c:/aqua/firestone-engine/tests/init.js"
-@REM mongo 127.0.0.1:27018/firestone-data --eval "db.getCollection('300448-2019-12-10').drop(); db.getCollection('399006-2019-12-10').drop(); db.getCollection('000993-2019-12-10').drop(); db.getCollection('000001-2019-12-10').drop();" "c:/aqua/firestone-engine/tests/e2e/batchydls/data.js"
+mongo 127.0.0.1/firestone-test --eval "db.dropDatabase(); db.getSiblingDB('firestone-test');" "c:/aqua/firestone-engine/tests/init.js"
+mongo 127.0.0.1:27018/firestone-data --eval "db.getCollection('300448-2019-12-10').drop(); db.getCollection('399006-2019-12-10').drop(); db.getCollection('000993-2019-12-10').drop(); db.getCollection('000001-2019-12-10').drop();" "c:/aqua/firestone-engine/tests/e2e/batchydls/data.js"
 REM mongoimport -d firestone-test -c codes "tests\concept\codes.json"
 REM mongoimport -d firestone-test -c concepts "tests\concept\concepts.json"
 REM mongoimport -d firestone-test -c hot_concept "tests\concept\hot_concept.json"
