@@ -14,6 +14,7 @@ from .strategies.ConceptPick import ConceptPick
 from .strategies.BatchYdls import BatchYdls
 from .strategies.PPT0 import PPT0
 from .strategies.MultiBuy import MultiBuy
+from .strategies.FreeK import FreeK
 import requests
 import json
 import gzip

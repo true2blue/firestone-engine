@@ -21,8 +21,10 @@ Usage
 
 (1) init
 
-pip install pipenv
+pip install 'pipenv==2022.4.8'
 pipenv sync
+
+(2022.4.20 and newer break on Python 3.6 with ``TypeError: 'NoneType' object is not callable`` in pip shims; see https://github.com/pypa/pipenv/issues/5068.)
 
 (2) install new dependency
 

@@ -208,6 +208,47 @@ db.strategies.insertMany([{
         "volume" : "500",
         "delta" : 0,
     }
+},{
+    "_id" : ObjectId("5da19b7d181fc3600c5544c9"),
+    "name" : "FreeK",
+    "description" : "在<i>监控时间</i>范围内,根据指定K线形态,涨速,成交量进行匹配",
+    "op" : "buy",
+    "url" : "FreeK",
+    "parameters" : {
+        "code" : "",
+        "executeDate" : "",
+        "monitorTime" : {
+            "start" : "09:30",
+            "end" : "15:00"
+        },
+        "k_shape" : {
+            "open" : {
+                "min" : "0.0",
+                "max" : "0.0"
+            },
+            "low" : {
+                "min" : "0.0",
+                "max" : "0.0"
+            },
+            "high" : {
+                "min" : "0.0",
+                "max" : "0.0"
+            },
+            "close" : {
+                "min" : "0.0",
+                "max" : "0.0"
+            }
+        },
+        "speed" : {
+            "time_price" : "30",
+            "percent" : "1.0",
+            "time_volume" : "30",
+            "volume" : "1000"
+        },
+        "voulme_now" : "20000",
+        "volume" : "500",
+        "delta" : 0
+    }
 }]);
 db.mocktrades.insertMany([{
     "code" : "300691",
@@ -561,6 +602,50 @@ db.mocktrades.insertMany([{
         "drop_open_percent" : "0.5",
         "volume" : 500,
         "delta" : 0
+    }
+},{
+    "_id" : ObjectId("5db7e0a555609bb27252edb2"),
+    "code" : "300448",
+    "state" : "运行中",
+    "result" : "无",
+    "userId" : ObjectId("5d905db9fc84d3224b0eb59c"),
+    "strategyId" : ObjectId("5da19b7d181fc3600c5544c3"),
+    "createDate" : ISODate("2019-09-15T00:00:00.000Z"),
+    "deleted" : false,
+    "params" : {
+        "code" : "300448",
+        "executeDate" : "2019-12-09",
+        "monitorTime" : {
+            "start" : "09:30",
+            "end" : "15:00"
+        },
+        "k_shape" : {
+            "open" : {
+                "min" : "7.880",
+                "max" : "7.880"
+            },
+            "low" : {
+                "min" : "7.760",
+                "max" : "7.760"
+            },
+            "high" : {
+                "min" : "7.900",
+                "max" : "7.900"
+            },
+            "close" : {
+                "min" : "7.780",
+                "max" : "7.780"
+            }
+        },
+        "speed" : {
+            "time_price" : "30",
+            "percent" : "-0.266",
+            "time_volume" : "30",
+            "volume" : "210600"
+        },
+        "voulme_now" : "20000",
+        "volume" : 1000,
+        "delta" : 0,
     }
 }
 ]);
