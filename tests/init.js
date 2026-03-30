@@ -623,6 +623,10 @@ db.mocktrades.insertMany([{
             "start" : "09:30",
             "end" : "15:00"
         },
+        "index_percent" : {
+            "min" : "-10.0",
+            "max" : "10.0"
+        },
         "k_shape" : {
             "open" : {
                 "min" : "7.880",
