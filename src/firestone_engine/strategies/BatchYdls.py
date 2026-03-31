@@ -45,20 +45,20 @@ class BatchYdls(object):
         return df['percent'].mean()
 
     def matchCondition(self):
-        max_percent = self.get_max_stock_percent()
-        if(max_percent < float(self.trade['params']['max_stock_percent'])):
-            return False
         # get average percent
         avg_percent = self.calculate_avg_percent()
         if(avg_percent < float(self.trade['params']['min_avg_stock_percent'])):
             return False
+        top_n_codes = self.get_top_stock_codes()
         for code, data in self.data.items():
             try:
+                if code not in top_n_codes:
+                    continue
                 open_percent = self.get_percent_by_price(float(data[-1]['open']), data[-1])
                 if open_percent < Decimal(self.trade['params']['open_percent_low']) or open_percent > Decimal(self.trade['params']['open_percent_high']):
                     continue
                 current_percent = self.get_percent_by_price(float(data[-1]['price']), data[-1])
-                if current_percent < max_percent:
+                if current_percent < avg_percent:
                     continue
                 if(code.startswith('3')):
                     index = self.index[Constants.INDEX[5]]
@@ -83,20 +83,18 @@ class BatchYdls(object):
         return self.match_data
 
 
-    def get_max_stock_percent(self):
+    def get_top_stock_codes(self, n=3):
         data_list = []
         for item in self.data.items():
             data = item[1]
             data_list.append(data[-1])
         df = pd.DataFrame(data_list)
         df['percent'] = (df['price'].astype(float) - df['pre_close'].astype(float)) / df['pre_close'].astype(float) * 100
-        # Exclude rows where percent > 9.0 before finding idxmax
+        # Exclude rows where percent > 9.0
         filtered_df = df[df['percent'] <= 9.0]
-        if filtered_df.empty:
-            row = df.iloc[0]  # fallback to original df's first row if nothing remains
-        else:
-            row = filtered_df.loc[filtered_df['percent'].idxmax()]
-        return Utils.round_dec(float(row['percent']))
+        # Sort by percent descending and get top N
+        top_n = filtered_df.nlargest(n, 'percent')
+        return top_n['code'].tolist()
 
 
     def get_percent_by_price(self, price, row):
