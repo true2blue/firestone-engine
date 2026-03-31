@@ -1,20 +1,30 @@
 import unittest
-from firestone_engine.DataLoader import DataLoader
+import os
+import time
+from firestone_engine.DFCFDataLoader import DFCFDataLoader
 
 class TestDataloader(unittest.TestCase):
 
     def setUp(self):
-        self.dl = DataLoader('000000', is_mock=False, mock_trade=True)
+        self.dl = DFCFDataLoader(['000723','300300','601600'])
 
 
     def test_get_code_list_from_db(self):
-        code_list = self.dl.get_code_list_from_db()
-        self.assertEqual(len(code_list),5)
-        print(code_list)    
-
-
-    def tearDown(self):
-        self.dl.client.close()
+        self.dl.start()
+        try:
+            while(not self.dl.is_finsih()):
+                time.sleep(100)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.dl.stop()
 
 if __name__ == "__main__":
+    # import ptvsd
+    # # 5678 is the default attach port in the VS Code debug configurations
+    # print("start debug on port 5678")
+    # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    # ptvsd.wait_for_attach()
+
+    os.environ['FR_DB'] = 'firestone'
     unittest.main()
