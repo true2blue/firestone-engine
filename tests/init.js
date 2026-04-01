@@ -245,10 +245,10 @@ db.strategies.insertMany([{
         "speed" : {
             "time_price" : "30",
             "percent" : "1.0",
-            "time_volume" : "30",
-            "volume" : "1000"
+            "time_amount" : "30",
+            "amount" : "1000"
         },
-        "voulme_now" : "20000",
+        "amount_now" : "20000",
         "volume" : "500",
         "delta" : 0
     }
@@ -646,10 +646,10 @@ db.mocktrades.insertMany([{
         "speed" : {
             "time_price" : "30",
             "percent" : "-0.266",
-            "time_volume" : "30",
-            "volume" : "210600"
+            "time_amount" : "30",
+            "amount" : "210600"
         },
-        "voulme_now" : "20000",
+        "amount_now" : "20000",
         "volume" : 1000,
         "delta" : 0,
     }

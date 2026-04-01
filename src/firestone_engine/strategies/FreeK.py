@@ -144,28 +144,28 @@ class FreeK(Base):
         if percent < percent_threshold:
             return False
 
-        # Volume speed (increase over window)
-        if "time_volume" not in speed or "volume" not in speed:
+        # Amount speed (increase over window)
+        if "time_amount" not in speed or "amount" not in speed:
             return False
 
-        time_volume = float(speed["time_volume"])
-        volume_threshold = Decimal(str(speed["volume"]))
-        pre_volume_row = self._get_pre_row_seconds_ago(time_volume)
-        if pre_volume_row is None:
+        time_amount = float(speed["time_amount"])
+        amount_threshold = Decimal(str(speed["amount"]))
+        pre_amount_row = self._get_pre_row_seconds_ago(time_amount)
+        if pre_amount_row is None:
             return False
 
-        pre_volume = Decimal(str(pre_volume_row["volume"]))
-        current_volume = Decimal(str(self.dataLastRow["volume"]))
-        volume_increase = current_volume - pre_volume
-        return volume_increase >= volume_threshold
+        pre_amount = Decimal(str(pre_amount_row["amount"]))
+        current_amount = Decimal(str(self.dataLastRow["amount"]))
+        amount_increase = current_amount - pre_amount
+        return amount_increase >= amount_threshold
 
     def match_volume_now(self):
         params = self.trade["params"]
         # Keep your original misspelling, but also accept a corrected key.
-        volume_key = "voulme_now" if "voulme_now" in params else "volume_now"
-        if volume_key not in params:
+        amount_key = "amount_now" if "amount_now" in params else "volume_now"
+        if amount_key not in params:
             return False
 
-        volume_now_threshold = Decimal(str(params[volume_key]))
-        current_volume = Decimal(str(self.dataLastRow["volume"]))
-        return current_volume >= volume_now_threshold
+        amount_now_threshold = Decimal(str(params[amount_key]))
+        current_amount = Decimal(str(self.dataLastRow["amount"]))
+        return current_amount >= amount_now_threshold
