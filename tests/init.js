@@ -56,12 +56,12 @@ db.strategies.insertMany([{
             "end" : "15:00"
         },
         "index_percent" : {
-            "low" : "-10.0",
-            "high" : "10.0"
+            "low" : "-0.5",
+            "high" : "3.0"
         },
         "percent" : {
-            "low" : "-4.0",
-            "high" : "1.0"
+            "low" : "-1",
+            "high" : "5.0"
         },
         "open_percent" : {
             "low" : "-2.0",
@@ -71,11 +71,11 @@ db.strategies.insertMany([{
             "upper_shadow" : "0.2",
             "ratio_l" : "2",
             "ratio_r" : "3",
-            "time" : "3.1",
+            "time" : "1",
             "break_top" : "1.5",
-            "time_2" : "2",
-            "percent" : "0.5",
-            "amount" : "50"
+            "time_2" : "0.5",
+            "percent" : "1.5",
+            "amount" : "600"
         },
         "volume" : 1000,
         "delta" : 0

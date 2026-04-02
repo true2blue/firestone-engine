@@ -1,0 +1,70 @@
+[{
+  "_id": {
+    "$oid": "69cd1aac9f6564554cca67fc"
+  },
+  "state": "已完成",
+  "result": "无",
+  "deleted": false,
+  "code": "600875,600312,000400,000682,600268,600089",
+  "userId": {
+    "$oid": "5d905db9fc84d3224b0eb59c"
+  },
+  "strategyId": {
+    "$oid": "5da19b7d181fc3600c5544c6"
+  },
+  "createDate": {
+    "$date": "2026-04-01T13:16:28.852Z"
+  },
+  "params": {
+    "code": "600875,600312,000400,000682,600268,600089",
+    "executeDate": "2026-04-02",
+    "monitorTime": {
+      "start": "00:00",
+      "end": "23:59"
+    },
+    "desc": "新型电网",
+    "strategyId": "5da19b7d181fc3600c5544c3",
+    "open_percent_low": "-2.0",
+    "open_percent_high": "3",
+    "min_avg_stock_percent": "2.0",
+    "auto_cancel": "1",
+    "volume": "3000",
+    "delta": "0.2"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69cd20ed9f6564554cca683c"
+  },
+  "state": "已完成",
+  "result": "无",
+  "deleted": false,
+  "code": "601872,600026,601975,600798,601919",
+  "userId": {
+    "$oid": "5d905db9fc84d3224b0eb59c"
+  },
+  "strategyId": {
+    "$oid": "5da19b7d181fc3600c5544c6"
+  },
+  "createDate": {
+    "$date": "2026-04-01T13:43:09.329Z"
+  },
+  "params": {
+    "code": "601872,600026,601975,600798,601919",
+    "executeDate": "2026-04-02",
+    "monitorTime": {
+      "start": "00:00",
+      "end": "23:59"
+    },
+    "desc": "油运",
+    "strategyId": "5da19b7d181fc3600c5544c3",
+    "open_percent_low": "-2.0",
+    "open_percent_high": "3",
+    "min_avg_stock_percent": "2.0",
+    "auto_cancel": "1",
+    "volume": "2500",
+    "delta": "0.2"
+  },
+  "__v": 0
+}]
