@@ -14,6 +14,8 @@ class DFCFDataLoader(object):
     
     _logger = logging.getLogger(__name__)
 
+    _BASE_URL = "https://quote.eastmoney.com/zixuan/"
+
     _MONFO_URL = '127.0.0.1'
 
     _DATA_DB = 'firestone-data'
@@ -21,7 +23,7 @@ class DFCFDataLoader(object):
     _CODE_FROM_DB = '000000'
     
     _UT = '6d2ffaa6a585d612eda28417681d58fb'
-    
+
     _SERVER_IDX = [f'0{x}' if x < 10 else f'{x}' for x in list(range(0, 100))]
     
     _FIELDS = 'f14,f17,f18,f2,f15,f16,f31,f32,f5,f6,f12'
@@ -94,6 +96,7 @@ class DFCFDataLoader(object):
         if len(codes) == 0:
             self.is_finsih_flag = True
         return codes
+        # return ['000723','300300','601600']
     
     def add_job(self, hours, minutes):
         for i, hour in enumerate(hours):
@@ -109,8 +112,8 @@ class DFCFDataLoader(object):
             temp = self.get_code_list()
             if temp != self.current_code_list:
                 diff = list(set(temp) - set(self.current_code_list))
-                DFCFDataLoader._logger.info('start get the data for {}'.format(diff))
                 self.current_code_list = temp
+                DFCFDataLoader._logger.info(f'1. start loading data for {diff}, thread id = {os.getpid()}')
                 self.load_data(diff)
         except Exception as e:
             DFCFDataLoader._logger.error(e)
@@ -192,36 +195,74 @@ class DFCFDataLoader(object):
             
     async def get_real_time_data_wrapper(self, l, proxyManager = None):
         for server_idx in DFCFDataLoader._SERVER_IDX:
+            session = None
             try:
                 while not self.is_during_the_trade_time():
                     await asyncio.sleep(1)
-                await self.get_real_time_data(l, server_idx = server_idx, proxyManager = proxyManager)
+                session = await self.create_aiohttp_session()
+                await self.get_real_time_data(l, session, server_idx = server_idx, proxyManager = proxyManager)
             except Exception as e:
                 DFCFDataLoader._logger.error(f'load data error, server_idx = {server_idx}, e = {e}')
+            finally:
+                if session is not None:
+                    await session.close()
         
-    async def get_real_time_data(self, l, server_idx = 0, proxyManager = None):
-        DFCFDataLoader._logger.info('start get realtime data for {}'.format(l))
-        async with aiohttp.ClientSession() as session:
-            codes = [code for code in [self.map_code(code) for code in l] if code is not None]
-            url = f"https://{server_idx}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
-            DFCFDataLoader._HEADERS['Host'] = f'{server_idx}.push2.eastmoney.com'
-            async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
-                if response.status == 200:
-                    async for event in response.content.iter_any():
-                        try:
-                            data = event.decode()[6:].strip()
-                            jsonData = json.loads(data)
-                            if 'data' in jsonData and jsonData['data'] is not None:
-                                total = jsonData['data']['total']
-                                for i in range(total):
-                                    if str(i) in jsonData['data']['diff']:
-                                        self.parseAndSaveData(jsonData['data']['diff'][str(i)])
-                        except Exception as e:
-                            DFCFDataLoader._logger.error(f'parse data error {event.decode()}, {e}')
-                else:
-                    DFCFDataLoader._logger.error('Failed to connect to the event stream, start retry')
-                    raise Exception(f'server response {response.status}')
+    async def create_aiohttp_session(self):
+        DFCFDataLoader._logger.info(f'2. create aiohttp session, thread id = {os.getpid()}')
+        # Create a session with a cookie jar (default), you may pass custom CookieJar()
+        session = aiohttp.ClientSession()
+
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Accept-Language": "en",
+            "Connection": "keep-alive",
+            "Host": "quote.eastmoney.com",
+            "Sec-CH-UA": '"Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"',
+            "Sec-CH-UA-Mobile": "?0",
+            "Sec-CH-UA-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+        }
+
+        # Step 1: visit the page to obtain cookies
+        async with session.get(DFCFDataLoader._BASE_URL, headers=headers) as resp:
+            DFCFDataLoader._logger.info(f"3. Visiting landing page to obtain cookies, status: {resp.status}, thread id = {os.getpid()}")
+            # read (or not) to ensure headers/cookies are processed
+            await resp.text()
+            # optional debug
+            DFCFDataLoader._logger.info(f"4. Landing page status: {resp.status}")
+
+        # return session
+        return session
     
+    
+    async def get_real_time_data(self, l, session, server_idx = 0, proxyManager = None):
+        DFCFDataLoader._logger.info(f'5. start get realtime data for {l}, server_idx = {server_idx}, thread id = {os.getpid()}')
+        codes = [code for code in [self.map_code(code) for code in l] if code is not None]
+        url = f"https://{server_idx}.push2.eastmoney.com/api/qt/ulist/sse?invt=3&pi=0&pz={len(codes)}&mpi=2000&secids={','.join(codes)}&ut={DFCFDataLoader._UT}&fields={DFCFDataLoader._FIELDS}&po=1"
+        DFCFDataLoader._HEADERS['Host'] = f'{server_idx}.push2.eastmoney.com'
+        async with session.get(url,headers=DFCFDataLoader._HEADERS) as response:
+            if response.status == 200:
+                DFCFDataLoader._logger.info(f'6. connected to the event stream for {l} from server {server_idx}, thread id = {os.getpid()}')
+                async for event in response.content.iter_any():
+                    try:
+                        data = event.decode()[6:].strip()
+                        jsonData = json.loads(data)
+                        if 'data' in jsonData and jsonData['data'] is not None:
+                            total = jsonData['data']['total']
+                            for i in range(total):
+                                if str(i) in jsonData['data']['diff']:
+                                    self.parseAndSaveData(jsonData['data']['diff'][str(i)])
+                    except Exception as e:
+                        DFCFDataLoader._logger.error(f'parse data error {event.decode()}, {e}')
+            else:
+                DFCFDataLoader._logger.error(f'failed to connect to the event stream for {l} from server {server_idx}, status = {response.status}, thread id = {os.getpid()}')
+                raise Exception(f'server response {response.status}')
     
     def start(self):
         self.scheduler.start()
